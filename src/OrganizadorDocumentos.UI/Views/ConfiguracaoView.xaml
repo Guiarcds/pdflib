@@ -1,0 +1,119 @@
+<UserControl x:Class="OrganizadorDocumentos.UI.Views.ConfiguracaoView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="800">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <TextBlock Text="Configurações" Style="{StaticResource HeaderTextStyle}"/>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Pastas do Sistema" FontSize="16" FontWeight="Bold"
+                               Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Pasta Raiz:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PastaRaiz, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="5"/>
+                        <Button Grid.Row="0" Grid.Column="2" Content="Procurar..." Command="{Binding SelecionarPastaCommand}"
+                                Style="{StaticResource ActionButtonStyle}" Margin="5"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Colaboradores:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PastaColaboradores, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="5"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Revisar:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PastaRevisar, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="5"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Entrada:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding PastaEntrada, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="5"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Configurações da API (OpenRouter)" FontSize="16" FontWeight="Bold"
+                               Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="API Key:" VerticalAlignment="Center"/>
+                        <PasswordBox Grid.Row="0" Grid.Column="1" Margin="5" x:Name="ApiKeyPasswordBox"
+                                     PasswordChanged="ApiKeyPasswordBox_PasswordChanged"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Modelo:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ApiModel, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="5"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Comportamento" FontSize="16" FontWeight="Bold"
+                               Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Modo Operação:" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Row="0" Grid.Column="1" SelectedValue="{Binding ModoOperacao}"
+                                  Margin="5" SelectedValuePath="Content">
+                            <ComboBoxItem Content="seguro"/>
+                            <ComboBoxItem Content="automatico"/>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Limiar Fuzzy:" VerticalAlignment="Center"/>
+                        <Slider Grid.Row="1" Grid.Column="1" Minimum="0.5" Maximum="1.0" Value="{Binding LimiarFuzzy}"
+                                TickFrequency="0.05" IsSnapToTickEnabled="True" Margin="5"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Máscara Mês:" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MascaraMes, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="5"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                <Button Content="Salvar Configurações" Command="{Binding SalvarCommand}"
+                        Style="{StaticResource SuccessButtonStyle}"/>
+                <TextBlock Text="{Binding StatusSalvamento}" VerticalAlignment="Center" Margin="15,0,0,0"
+                           Foreground="#27AE60"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

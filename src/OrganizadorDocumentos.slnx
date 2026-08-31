@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="../tests/OrganizadorDocumentos.Tests/OrganizadorDocumentos.Tests.csproj" />
+  <Project Path="OrganizadorDocumentos.Core/OrganizadorDocumentos.Core.csproj" />
+  <Project Path="OrganizadorDocumentos.Data/OrganizadorDocumentos.Data.csproj" />
+  <Project Path="OrganizadorDocumentos.UI/OrganizadorDocumentos.UI.csproj" />
+</Solution>

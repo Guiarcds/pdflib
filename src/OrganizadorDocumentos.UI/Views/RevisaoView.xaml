@@ -1,0 +1,60 @@
+<UserControl x:Class="OrganizadorDocumentos.UI.Views.RevisaoView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="800">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <TextBlock Text="Revisão Manual" Style="{StaticResource HeaderTextStyle}"/>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <Button Content="Atualizar Lista" Command="{Binding AtualizarListaCommand}"
+                        Style="{StaticResource ActionButtonStyle}"/>
+                <Button Content="Abrir Pasta REVISAR" Command="{Binding AbrirPastaRevisarCommand}"
+                        Style="{StaticResource WarningButtonStyle}"/>
+            </StackPanel>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Pasta de Revisão" FontSize="14" FontWeight="Bold"
+                               Foreground="#2C3E50" Margin="0,0,0,5"/>
+                    <TextBlock Text="{Binding CaminhoPastaRevisar}" Foreground="#7F8C8D"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Documentos para Revisão" FontSize="16" FontWeight="Bold"
+                               Foreground="#2C3E50" Margin="0,0,0,10"/>
+                    <ListView ItemsSource="{Binding ArquivosRevisar}" MaxHeight="400"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              SelectedItem="{Binding ArquivoSelecionado}">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Arquivo" Width="300">
+                                    <GridViewColumn.DisplayMemberBinding>
+                                        <Binding Converter="{StaticResource FileNameConverter}"/>
+                                    </GridViewColumn.DisplayMemberBinding>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Caminho Completo" Width="400"
+                                                DisplayMemberBinding="{Binding}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Ações" FontSize="16" FontWeight="Bold"
+                               Foreground="#2C3E50" Margin="0,0,0,10"/>
+                    <TextBlock Text="Analise os documentos na pasta REVISAR e mova-os manualmente após verificação."
+                               TextWrapping="Wrap" Foreground="#7F8C8D"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
