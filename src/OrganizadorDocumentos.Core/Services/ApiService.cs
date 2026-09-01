@@ -127,7 +127,7 @@ Retorne APENAS o JSON, sem explicações adicionais.";
         if (!response.IsSuccessStatusCode)
         {
             _log.Erro($"Erro na API OpenRouter: {response.StatusCode} - {jsonResponse}");
-            throw new HttpRequestException($"Erro na API: {response.StatusCode}");
+            throw new HttpRequestException($"Erro na API: {response.StatusCode} - {jsonResponse}");
         }
 
         return ParseRespostaIA(jsonResponse);

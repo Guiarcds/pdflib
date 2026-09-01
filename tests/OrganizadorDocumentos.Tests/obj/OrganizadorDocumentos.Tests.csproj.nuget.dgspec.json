@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Guilherme\\project\\pdflib\\tests\\OrganizadorDocumentos.Tests\\OrganizadorDocumentos.Tests.csproj": {}
+    "C:\\Dev\\Plotart\\pdflib\\pdflib\\tests\\OrganizadorDocumentos.Tests\\OrganizadorDocumentos.Tests.csproj": {}
   },
   "projects": {
-    "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj": {
+    "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj",
+        "projectUniqueName": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj",
         "projectName": "OrganizadorDocumentos.Core",
-        "projectPath": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj",
-        "packagesPath": "C:\\Users\\luisv\\.nuget\\packages\\",
-        "outputPath": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Core\\obj\\",
+        "projectPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj",
+        "packagesPath": "C:\\Users\\Guilh\\.nuget\\packages\\",
+        "outputPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Core\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\luisv\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Guilh\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -24,10 +24,11 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj": {
-                "projectPath": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj"
+              "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj": {
+                "projectPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj"
               }
             }
           }
@@ -42,10 +43,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "FuzzySharp": {
@@ -89,7 +91,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -367,17 +369,17 @@
         }
       }
     },
-    "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj": {
+    "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj",
+        "projectUniqueName": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj",
         "projectName": "OrganizadorDocumentos.Data",
-        "projectPath": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj",
-        "packagesPath": "C:\\Users\\luisv\\.nuget\\packages\\",
-        "outputPath": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Data\\obj\\",
+        "projectPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj",
+        "packagesPath": "C:\\Users\\Guilh\\.nuget\\packages\\",
+        "outputPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Data\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\luisv\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Guilh\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -387,6 +389,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -401,10 +404,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "imports": [
             "net461",
@@ -422,7 +426,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -700,17 +704,17 @@
         }
       }
     },
-    "C:\\Guilherme\\project\\pdflib\\tests\\OrganizadorDocumentos.Tests\\OrganizadorDocumentos.Tests.csproj": {
+    "C:\\Dev\\Plotart\\pdflib\\pdflib\\tests\\OrganizadorDocumentos.Tests\\OrganizadorDocumentos.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Guilherme\\project\\pdflib\\tests\\OrganizadorDocumentos.Tests\\OrganizadorDocumentos.Tests.csproj",
+        "projectUniqueName": "C:\\Dev\\Plotart\\pdflib\\pdflib\\tests\\OrganizadorDocumentos.Tests\\OrganizadorDocumentos.Tests.csproj",
         "projectName": "OrganizadorDocumentos.Tests",
-        "projectPath": "C:\\Guilherme\\project\\pdflib\\tests\\OrganizadorDocumentos.Tests\\OrganizadorDocumentos.Tests.csproj",
-        "packagesPath": "C:\\Users\\luisv\\.nuget\\packages\\",
-        "outputPath": "C:\\Guilherme\\project\\pdflib\\tests\\OrganizadorDocumentos.Tests\\obj\\",
+        "projectPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\tests\\OrganizadorDocumentos.Tests\\OrganizadorDocumentos.Tests.csproj",
+        "packagesPath": "C:\\Users\\Guilh\\.nuget\\packages\\",
+        "outputPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\tests\\OrganizadorDocumentos.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\luisv\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\Guilh\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -720,13 +724,14 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj": {
-                "projectPath": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj"
+              "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj": {
+                "projectPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Core\\OrganizadorDocumentos.Core.csproj"
               },
-              "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj": {
-                "projectPath": "C:\\Guilherme\\project\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj"
+              "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj": {
+                "projectPath": "C:\\Dev\\Plotart\\pdflib\\pdflib\\src\\OrganizadorDocumentos.Data\\OrganizadorDocumentos.Data.csproj"
               }
             }
           }
@@ -741,10 +746,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.400"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.NET.Test.Sdk": {
@@ -780,7 +786,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
