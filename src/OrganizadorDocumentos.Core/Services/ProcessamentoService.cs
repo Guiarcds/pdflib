@@ -76,16 +76,7 @@ public class ProcessamentoService : IProcessamentoService
 
             if (colaboradoresCompativeis.Count == 0)
             {
-                var config = _configuracao.ObterConfiguracao();
-                if (config.ModoOperacao.Equals("automatico", StringComparison.OrdinalIgnoreCase))
-                {
-                    return await CriarColaboradorENovoAsync(caminhoPdf, dados, estrutura);
-                }
-
-                resultado.Status = StatusProcessamento.Revisar;
-                resultado.Mensagem = $"Colaborador '{dados.Colaborador}' não encontrado. Nenhuma pasta correspondente.";
-                _log.Aviso(resultado.Mensagem);
-                return resultado;
+                return await CriarColaboradorENovoAsync(caminhoPdf, dados, estrutura);
             }
 
             if (colaboradoresCompativeis.Count > 1)
