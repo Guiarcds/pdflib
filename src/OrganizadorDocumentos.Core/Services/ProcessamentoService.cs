@@ -51,72 +51,84 @@ public class ProcessamentoService : IProcessamentoService
                 resultado.Status = StatusProcessamento.Revisar;
                 resultado.Mensagem = "Colaborador não identificado no documento";
                 _log.Aviso(resultado.Mensagem);
-                return resultado;
             }
-
-            if (!dados.TemCompetencia)
+            else if (!dados.TemCompetencia)
             {
                 resultado.Status = StatusProcessamento.Revisar;
                 resultado.Mensagem = "Competência não identificada no documento";
                 _log.Aviso(resultado.Mensagem);
-                return resultado;
             }
-
-            if (!dados.TemSigla)
+            else if (!dados.TemSigla)
             {
                 resultado.Status = StatusProcessamento.Revisar;
                 resultado.Mensagem = "Tipo de documento não identificado";
                 _log.Aviso(resultado.Mensagem);
-                return resultado;
             }
-
-            var estrutura = _mapeamento.ObterMapeamento();
-            var nomeNormalizado = _normalizacao.NormalizarNome(dados.Colaborador!);
-            var colaboradoresCompativeis = _mapeamento.BuscarColaboradoresCompativeis(nomeNormalizado);
-
-            if (colaboradoresCompativeis.Count == 0)
+            else
             {
-                return await CriarColaboradorENovoAsync(caminhoPdf, dados, estrutura);
+                var estrutura = _mapeamento.ObterMapeamento();
+                var nomeNormalizado = _normalizacao.NormalizarNome(dados.Colaborador!);
+                var colaboradoresCompativeis = _mapeamento.BuscarColaboradoresCompativeis(nomeNormalizado);
+
+                if (colaboradoresCompativeis.Count == 0)
+                {
+                    var r = await CriarColaboradorENovoAsync(caminhoPdf, dados, estrutura);
+                    resultado.Status = r.Status;
+                    resultado.Mensagem = r.Mensagem;
+                    resultado.CaminhoDestino = r.CaminhoDestino;
+                }
+                else if (colaboradoresCompativeis.Count > 1)
+                {
+                    resultado.Status = StatusProcessamento.Revisar;
+                    resultado.Mensagem = $"Múltiplas pastas encontradas para '{dados.Colaborador}': " +
+                        string.Join(", ", colaboradoresCompativeis.Select(c => c.NomePasta));
+                    _log.Aviso(resultado.Mensagem);
+                }
+                else
+                {
+                    var colaborador = colaboradoresCompativeis[0];
+                    var competencia = dados.Competencia!;
+
+                    var pastaAno = _fileService.BuscarPastaAno(competencia.Ano!.Value, colaborador.CaminhoCompleto);
+                    var pastaMes = _fileService.BuscarPastaMes(competencia.Mes!.Value, competencia.Ano!.Value, pastaAno);
+
+                    var nomeArquivo = GerarNomeArquivo(dados, competencia);
+                    var caminhoDestino = Path.Combine(pastaMes, nomeArquivo);
+
+                    if (_fileService.ArquivoExiste(caminhoDestino))
+                    {
+                        resultado.Status = StatusProcessamento.Revisar;
+                        resultado.Mensagem = $"Arquivo de destino já existe: {caminhoDestino}";
+                        _log.Aviso(resultado.Mensagem);
+                    }
+                    else
+                    {
+                        _fileService.MoverArquivo(caminhoPdf, caminhoDestino);
+                        resultado.Status = StatusProcessamento.Sucesso;
+                        resultado.CaminhoDestino = caminhoDestino;
+                        resultado.Mensagem = $"Documento movido com sucesso para: {caminhoDestino}";
+                        _log.Informacao(resultado.Mensagem);
+                    }
+                }
             }
-
-            if (colaboradoresCompativeis.Count > 1)
-            {
-                resultado.Status = StatusProcessamento.Revisar;
-                resultado.Mensagem = $"Múltiplas pastas encontradas para '{dados.Colaborador}': " +
-                    string.Join(", ", colaboradoresCompativeis.Select(c => c.NomePasta));
-                _log.Aviso(resultado.Mensagem);
-                return resultado;
-            }
-
-            var colaborador = colaboradoresCompativeis[0];
-            var competencia = dados.Competencia!;
-
-            var pastaAno = _fileService.BuscarPastaAno(competencia.Ano!.Value, colaborador.CaminhoCompleto);
-            var pastaMes = _fileService.BuscarPastaMes(competencia.Mes!.Value, competencia.Ano!.Value, pastaAno);
-
-            var nomeArquivo = GerarNomeArquivo(dados, competencia);
-            var caminhoDestino = Path.Combine(pastaMes, nomeArquivo);
-
-            if (_fileService.ArquivoExiste(caminhoDestino))
-            {
-                resultado.Status = StatusProcessamento.Revisar;
-                resultado.Mensagem = $"Arquivo de destino já existe: {caminhoDestino}";
-                _log.Aviso(resultado.Mensagem);
-                return resultado;
-            }
-
-            _fileService.MoverArquivo(caminhoPdf, caminhoDestino);
-
-            resultado.Status = StatusProcessamento.Sucesso;
-            resultado.CaminhoDestino = caminhoDestino;
-            resultado.Mensagem = $"Documento movido com sucesso para: {caminhoDestino}";
-            _log.Informacao(resultado.Mensagem);
         }
         catch (Exception ex)
         {
             resultado.Status = StatusProcessamento.Erro;
             resultado.Mensagem = $"Erro ao processar documento: {ex.Message}";
             _log.Erro(resultado.Mensagem, ex);
+        }
+
+        if (resultado.Status == StatusProcessamento.Revisar && File.Exists(caminhoPdf))
+        {
+            var config = _configuracao.ObterConfiguracao();
+            var pastaRevisar = Path.Combine(config.PastaRaiz, config.PastaRevisar);
+            _fileService.CriarPasta(pastaRevisar);
+            var nomeArquivo = Path.GetFileName(caminhoPdf);
+            var destinoRevisao = Path.Combine(pastaRevisar, nomeArquivo);
+            _fileService.MoverArquivo(caminhoPdf, destinoRevisao);
+            resultado.Mensagem += $" | Movido para revisão: {destinoRevisao}";
+            _log.Informacao($"Documento movido para revisão: {destinoRevisao}");
         }
 
         DocumentoProcessado?.Invoke(this, resultado);
@@ -190,7 +202,6 @@ public class ProcessamentoService : IProcessamentoService
             _log.Erro(resultado.Mensagem, ex);
         }
 
-        DocumentoProcessado?.Invoke(this, resultado);
         return resultado;
     }
 
