@@ -36,17 +36,32 @@ public partial class RevisaoView : UserControl
 }
 
 public partial class ConfiguracaoView : UserControl
-{
-    public ConfiguracaoView()
     {
-        InitializeComponent();
-    }
+        private bool _restaurandoSenha;
 
-    private void ApiKeyPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is ViewModels.ConfiguracaoViewModel vm)
+        public ConfiguracaoView()
         {
-            vm.ApiKey = ApiKeyPasswordBox.Password;
+            InitializeComponent();
         }
-    }
+
+        private void ConfiguracaoView_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is ViewModels.ConfiguracaoViewModel vm && !string.IsNullOrEmpty(vm.ApiKey))
+            {
+                _restaurandoSenha = true;
+                ApiKeyPasswordBox.Password = vm.ApiKey;
+                _restaurandoSenha = false;
+            }
+        }
+
+        private void ApiKeyPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (_restaurandoSenha)
+                return;
+
+            if (DataContext is ViewModels.ConfiguracaoViewModel vm)
+            {
+                vm.ApiKey = ApiKeyPasswordBox.Password;
+            }
+        }
 }
