@@ -1,0 +1,12 @@
+{
+  "PastaRaiz": "",
+  "PastaColaboradores": "COLABORADORES",
+  "PastaRevisar": "REVISAR",
+  "PastaEntrada": "ENTRADA",
+  "ApiKey": "",
+  "ApiModel": "google/gemini-2.0-flash-001",
+  "ModoOperacao": "seguro",
+  "LimiarFuzzy": 0.80,
+  "IntervaloVarreduraMinutos": 30,
+  "MascaraMes": "00 - Mmmm"
+}
