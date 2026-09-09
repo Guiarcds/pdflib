@@ -110,17 +110,32 @@ public class FileService : IFileService
         return novoCaminho;
     }
 
-    public void MoverArquivo(string origem, string destino)
+    public void MoverArquivo(string origem, string destino, bool sobrescrever = false)
     {
         if (!File.Exists(origem))
             throw new FileNotFoundException($"Arquivo não encontrado: {origem}");
 
-        if (File.Exists(destino))
-            throw new InvalidOperationException($"Arquivo de destino já existe: {destino}");
-
         var diretorioDestino = Path.GetDirectoryName(destino);
         if (!string.IsNullOrEmpty(diretorioDestino) && !Directory.Exists(diretorioDestino))
             Directory.CreateDirectory(diretorioDestino);
+
+        if (File.Exists(destino))
+        {
+            if (sobrescrever)
+            {
+                File.Delete(destino);
+                _log.Aviso($"Arquivo de destino sobrescrito: {destino}");
+            }
+            else
+            {
+                // Gera nome único automaticamente
+                var nomeBase = Path.GetFileNameWithoutExtension(destino);
+                var extensao = Path.GetExtension(destino);
+                var caminhoUnico = NomeArquivoUnico(diretorioDestino!, nomeBase, extensao);
+                destino = caminhoUnico;
+                _log.Aviso($"Arquivo já existe, usando nome único: {Path.GetFileName(destino)}");
+            }
+        }
 
         File.Move(origem, destino);
         _log.Informacao($"Arquivo movido: {origem} -> {destino}");

@@ -128,8 +128,12 @@ Retorne APENAS o JSON, sem explicações adicionais.";
         _httpClient.DefaultRequestHeaders.Add("HTTP-Referer", "https://organizador-documentos.local");
         _httpClient.DefaultRequestHeaders.Add("X-Title", "Organizador de Documentos");
 
+        _log.Debug($"Enviando para IA (model: {config.ApiModel}): {textoPdf.Length} chars");
+
         var response = await _httpClient.PostAsync("https://openrouter.ai/api/v1/chat/completions", content);
         var jsonResponse = await response.Content.ReadAsStringAsync();
+
+        _log.Debug($"Resposta da API (status: {response.StatusCode}): {jsonResponse}");
 
         if (!response.IsSuccessStatusCode)
         {
@@ -153,14 +157,17 @@ Retorne APENAS o JSON, sem explicações adicionais.";
                 return new DocumentoFinanceiro { Confianca = 0 };
             }
 
+            _log.Debug($"Conteúdo bruto da IA: {content}");
+
             var jsonMatch = System.Text.RegularExpressions.Regex.Match(content, @"\{.*\}", System.Text.RegularExpressions.RegexOptions.Singleline);
             if (!jsonMatch.Success)
             {
-                _log.Aviso("JSON não encontrado na resposta da IA");
+                _log.Aviso($"JSON não encontrado na resposta da IA. Conteúdo: {content}");
                 return new DocumentoFinanceiro { Confianca = 0 };
             }
 
             var dados = JObject.Parse(jsonMatch.Value);
+            _log.Debug($"JSON parseado: {dados}");
 
             return new DocumentoFinanceiro
             {

@@ -130,7 +130,7 @@ public class ProcessamentoService : IProcessamentoService
             _fileService.CriarPasta(pastaRevisar);
             var nomeArquivo = Path.GetFileName(caminhoPdf);
             var destinoRevisao = Path.Combine(pastaRevisar, nomeArquivo);
-            _fileService.MoverArquivo(caminhoPdf, destinoRevisao);
+            _fileService.MoverArquivo(caminhoPdf, destinoRevisao, sobrescrever: true);
             resultado.Mensagem += $" | Movido para revisão: {destinoRevisao}";
             _log.Informacao($"Documento movido para revisão: {destinoRevisao}");
         }
