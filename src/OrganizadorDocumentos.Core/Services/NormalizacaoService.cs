@@ -51,7 +51,16 @@ public class NormalizacaoService : INormalizacaoService
         }
 
         var normalizado = sb.ToString();
-        normalizado = Regex.Replace(normalizado, @"[^a-z0-9\s_]", "");
+        normalizado = normalizado.Replace('_', ' '); // Converte underscores para espaços
+        normalizado = Regex.Replace(normalizado, @"[^a-z0-9\s]", "");
+        normalizado = Regex.Replace(normalizado, @"\s+", " ").Trim();
+
+        // Remove partículas comuns que não ajudam na diferenciação
+        var particulas = new[] { " da ", " de ", " do ", " das ", " dos ", " e " };
+        foreach (var p in particulas)
+        {
+            normalizado = normalizado.Replace(p, " ");
+        }
         normalizado = Regex.Replace(normalizado, @"\s+", " ").Trim();
 
         return normalizado;
@@ -68,10 +77,17 @@ public class NormalizacaoService : INormalizacaoService
         if (norm1 == norm2)
             return 1.0;
 
-        return Fuzz.Ratio(norm1, norm2) / 100.0;
+        // Usa múltiplos algoritmos e pega o melhor
+        var ratio = Fuzz.Ratio(norm1, norm2);
+        var partialRatio = Fuzz.PartialRatio(norm1, norm2);
+        var tokenSortRatio = Fuzz.TokenSortRatio(norm1, norm2);
+        var tokenSetRatio = Fuzz.TokenSetRatio(norm1, norm2);
+
+        var melhorScore = new[] { ratio, partialRatio, tokenSortRatio, tokenSetRatio }.Max();
+        return melhorScore / 100.0;
     }
 
-    public bool SãoEquivalentes(string nome1, string nome2, double limiar = 0.80)
+    public bool SãoEquivalentes(string nome1, string nome2, double limiar = 0.85)
     {
         return CalcularSimilaridade(nome1, nome2) >= limiar;
     }

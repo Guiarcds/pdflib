@@ -46,10 +46,14 @@ public class ProcessamentoService : IProcessamentoService
             var dados = await _apiService.ExtrairDadosAsync(caminhoPdf);
             resultado.DadosExtraidos = dados;
 
-            if (!dados.TemColaborador)
+            const double LIMIAR_CONFIANCA = 0.70;
+
+            if (!dados.TemColaborador || dados.Confianca < LIMIAR_CONFIANCA)
             {
                 resultado.Status = StatusProcessamento.Revisar;
-                resultado.Mensagem = "Colaborador não identificado no documento";
+                resultado.Mensagem = !dados.TemColaborador
+                    ? "Colaborador não identificado no documento"
+                    : $"Colaborador identificado com baixa confiança ({dados.Confianca:P0} < {LIMIAR_CONFIANCA:P0})";
                 _log.Aviso(resultado.Mensagem);
             }
             else if (!dados.TemCompetencia)

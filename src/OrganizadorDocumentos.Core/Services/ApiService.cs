@@ -34,6 +34,13 @@ Siglas: VT=Vale Transporte, VA=Vale Alimentação, AC=Ajuda de Custo,
 BO=Bonificação, CO=Comissão, SP=Serviço Prestado, DE=Diária,
 SE=Salário Extra, SB=Salário Base, OS=Vale por OS
 
+REGRAS PARA EXTRAÇÃO DE COLABORADOR:
+- Procure por: ""Funcionário"", ""Colaborador"", ""Empregado"", ""Trabalhador"", ""Nome"", ""Beneficiário"", ""Titular""
+- Nomes brasileiros podem ter: acentos (João, São, José), partículas (da, de, do, das, dos), sobrenomes compostos (Silva Santos, Costa Lima)
+- Exemplos válidos: ""João da Silva"", ""Maria José dos Santos"", ""José Maria da Costa Lima""
+- Se houver múltiplos nomes, escolha o que aparece como titular/beneficiário do documento
+- Ignore nomes de empresas, bancos, órgãos públicos
+
 Retorne APENAS o JSON, sem explicações adicionais.";
 
     public ApiService(IConfiguracaoService configuracao, ILogService log, HttpClient? httpClient = null)
