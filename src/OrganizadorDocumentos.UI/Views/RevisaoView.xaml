@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="800">
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="900">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
@@ -29,7 +30,7 @@
                 <StackPanel>
                     <TextBlock Text="Documentos para Revisão" FontSize="16" FontWeight="Bold"
                                Foreground="#2C3E50" Margin="0,0,0,10"/>
-                    <ListView ItemsSource="{Binding ArquivosRevisar}" MaxHeight="400"
+                    <ListView ItemsSource="{Binding ArquivosRevisar}" MaxHeight="300"
                               ScrollViewer.VerticalScrollBarVisibility="Auto"
                               SelectedItem="{Binding ArquivoSelecionado}">
                         <ListView.View>
@@ -39,7 +40,7 @@
                                         <Binding Converter="{StaticResource FileNameConverter}"/>
                                     </GridViewColumn.DisplayMemberBinding>
                                 </GridViewColumn>
-                                <GridViewColumn Header="Caminho Completo" Width="400"
+                                <GridViewColumn Header="Caminho Completo" Width="500"
                                                 DisplayMemberBinding="{Binding}"/>
                             </GridView>
                         </ListView.View>
@@ -47,11 +48,114 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource CardStyle}">
+            <!-- Formulário de Revisão Manual -->
+            <Border Style="{StaticResource CardStyle}" Visibility="{Binding TemArquivoSelecionado, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Margin="0,20,0,0">
+                    <TextBlock Text="Preenchimento Manual" FontSize="16" FontWeight="Bold"
+                               Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Colaborador -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Colaborador:" 
+                                   VerticalAlignment="Center" Margin="0,5,10,5" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Colaborador, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,5,0,5" Padding="5" Height="30"/>
+
+                        <!-- Sigla -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Sigla (VT/VA/AC/BO/CO/SP/DE/SE/SB/OS):" 
+                                   VerticalAlignment="Center" Margin="0,5,10,5" FontWeight="SemiBold"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" Text="{Binding Sigla, UpdateSourceTrigger=PropertyChanged}"
+                                  IsEditable="True" Margin="0,5,0,5" Padding="5" Height="30">
+                            <sys:String>VT</sys:String>
+                            <sys:String>VA</sys:String>
+                            <sys:String>AC</sys:String>
+                            <sys:String>BO</sys:String>
+                            <sys:String>CO</sys:String>
+                            <sys:String>SP</sys:String>
+                            <sys:String>DE</sys:String>
+                            <sys:String>SE</sys:String>
+                            <sys:String>SB</sys:String>
+                            <sys:String>OS</sys:String>
+                        </ComboBox>
+
+                        <!-- Competência -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Competência (Mês/Ano):" 
+                                   VerticalAlignment="Center" Margin="0,5,10,5" FontWeight="SemiBold"/>
+                        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="0,5,0,5">
+                            <ComboBox SelectedItem="{Binding CompetenciaMes}" Width="80" Margin="0,0,10,0" Padding="3" Height="30">
+                                <ComboBox.ItemsSource>
+                                    <x:Array Type="sys:Int32">
+                                        <sys:Int32>1</sys:Int32>
+                                        <sys:Int32>2</sys:Int32>
+                                        <sys:Int32>3</sys:Int32>
+                                        <sys:Int32>4</sys:Int32>
+                                        <sys:Int32>5</sys:Int32>
+                                        <sys:Int32>6</sys:Int32>
+                                        <sys:Int32>7</sys:Int32>
+                                        <sys:Int32>8</sys:Int32>
+                                        <sys:Int32>9</sys:Int32>
+                                        <sys:Int32>10</sys:Int32>
+                                        <sys:Int32>11</sys:Int32>
+                                        <sys:Int32>12</sys:Int32>
+                                    </x:Array>
+                                </ComboBox.ItemsSource>
+                            </ComboBox>
+                            <ComboBox SelectedItem="{Binding CompetenciaAno}" Width="100" Padding="3" Height="30">
+                                <ComboBox.ItemsSource>
+                                    <x:Array Type="sys:Int32">
+                                        <sys:Int32>2024</sys:Int32>
+                                        <sys:Int32>2025</sys:Int32>
+                                        <sys:Int32>2026</sys:Int32>
+                                        <sys:Int32>2027</sys:Int32>
+                                        <sys:Int32>2028</sys:Int32>
+                                    </x:Array>
+                                </ComboBox.ItemsSource>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Data -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Data (DD/MM/AAAA):" 
+                                   VerticalAlignment="Center" Margin="0,5,10,5" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Data, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,5,0,5" Padding="5" Height="30"/>
+
+                        <!-- Número OS -->
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Número OS (se sigla OS):" 
+                                   VerticalAlignment="Center" Margin="0,5,10,5" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding NumeroOS, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,5,0,5" Padding="5" Height="30"/>
+                    </Grid>
+
+                    <!-- Status e Botões -->
+                    <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                        <Button Content="Processar" Command="{Binding ProcessarManualCommand}"
+                                Style="{StaticResource SuccessButtonStyle}" Width="120" Height="35"/>
+                        <Button Content="Limpar" Command="{Binding LimparFormularioCommand}"
+                                Style="{StaticResource WarningButtonStyle}" Width="100" Height="35" Margin="10,0,0,0"/>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding StatusMensagem}" Margin="0,10,0,0" 
+                               Foreground="#27AE60" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}" Visibility="{Binding TemArquivoSelecionado, Converter={StaticResource BooleanToVisibilityConverter}, ConverterParameter=Inverse}">
                 <StackPanel>
                     <TextBlock Text="Ações" FontSize="16" FontWeight="Bold"
                                Foreground="#2C3E50" Margin="0,0,0,10"/>
-                    <TextBlock Text="Analise os documentos na pasta REVISAR e mova-os manualmente após verificação."
+                    <TextBlock Text="Selecione um documento na lista acima para preencher as informações manualmente."
                                TextWrapping="Wrap" Foreground="#7F8C8D"/>
                 </StackPanel>
             </Border>
