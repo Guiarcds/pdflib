@@ -12,7 +12,7 @@ public class ApiService : IApiService
     private readonly ILogService _log;
     private readonly HttpClient _httpClient;
 
-    private const string SystemPrompt = @"Você é um especialista em documentos financeiros brasileiros.
+private const string SystemPrompt = @"Você é um especialista em documentos financeiros brasileiros.
 Analise o PDF fornecido e extraia APENAS as informações solicitadas.
 NÃO invente informações. Se não encontrar, retorne null.
 
@@ -35,13 +35,14 @@ BO=Bonificação, CO=Comissão, SP=Serviço Prestado, DE=Diária,
 SE=Salário Extra, SB=Salário Base, OS=Vale por OS
 
 REGRAS PARA EXTRAÇÃO DE COLABORADOR (MUITO IMPORTANTE):
-- O COLABORADOR é SEMPRE o **BENEFICIÁRIO/TITULAR** (quem RECEBE o valor)
+- O COLABORADOR é quem **RECEBE** o valor/benefício (beneficiário/titular/favorecido)
 - Procure por: ""Beneficiário"", ""Titular"", ""Funcionário"", ""Colaborador"", ""Empregado"", ""Trabalhador"", ""Favorecido"", ""Destinatário""
-- **IGNORE COMPLETAMENTE**: ""Emitente"", ""Empresa"", ""Órgão Emissor"", ""Emissor"", ""Pagador"", ""Fonte Pagadora"", ""Contratante"" — estes são quem PAGA, não quem recebe
+- **ATENÇÃO COM 'EMITENTE'**: Em RECIBOS, o campo ""Emitente"" pode indicar QUEM RECEBE (ex: ""Emitente: João da Silva""). Nestes casos, USE o nome após ""Emitente"". Mas em VALES/BOLETOS, ""Emitente"" é quem EMITE/PAGA (empresa/prefeitura) — NESTES CASOS IGNORE.
+- Como distinguir: se o documento tem título ""RECIBO"" ou ""RECIBO DE PAGAMENTO"", ""Emitente"" = colaborador. Se é ""VALE"", ""BOLETO"", ""COMPROVANTE DE PAGAMENTO"", ""Emitente"" = empresa/pagador (ignore).
+- **IGNORE SEMPRE**: nomes de empresas, bancos, órgãos públicos, prefeituras, secretarias, CNPJs como colaborador
 - Nomes brasileiros podem ter: acentos (João, São, José), partículas (da, de, do, das, dos), sobrenomes compostos (Silva Santos, Costa Lima)
 - Exemplos válidos: ""João da Silva"", ""Maria José dos Santos"", ""José Maria da Costa Lima""
-- Se houver múltiplos nomes, escolha o que aparece como **titular/beneficiário/favorecido** do documento
-- **NUNCA** use nomes de empresas, bancos, órgãos públicos, prefeituras, secretarias como colaborador
+- Se houver múltiplos nomes, escolha o que aparece como **titular/beneficiário/favorecido/emitente (em recibos)** do documento
 
 Retorne APENAS o JSON, sem explicações adicionais.";
 
