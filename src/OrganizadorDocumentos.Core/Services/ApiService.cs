@@ -34,12 +34,14 @@ Siglas: VT=Vale Transporte, VA=Vale Alimentação, AC=Ajuda de Custo,
 BO=Bonificação, CO=Comissão, SP=Serviço Prestado, DE=Diária,
 SE=Salário Extra, SB=Salário Base, OS=Vale por OS
 
-REGRAS PARA EXTRAÇÃO DE COLABORADOR:
-- Procure por: ""Funcionário"", ""Colaborador"", ""Empregado"", ""Trabalhador"", ""Nome"", ""Beneficiário"", ""Titular""
+REGRAS PARA EXTRAÇÃO DE COLABORADOR (MUITO IMPORTANTE):
+- O COLABORADOR é SEMPRE o **BENEFICIÁRIO/TITULAR** (quem RECEBE o valor)
+- Procure por: ""Beneficiário"", ""Titular"", ""Funcionário"", ""Colaborador"", ""Empregado"", ""Trabalhador"", ""Favorecido"", ""Destinatário""
+- **IGNORE COMPLETAMENTE**: ""Emitente"", ""Empresa"", ""Órgão Emissor"", ""Emissor"", ""Pagador"", ""Fonte Pagadora"", ""Contratante"" — estes são quem PAGA, não quem recebe
 - Nomes brasileiros podem ter: acentos (João, São, José), partículas (da, de, do, das, dos), sobrenomes compostos (Silva Santos, Costa Lima)
 - Exemplos válidos: ""João da Silva"", ""Maria José dos Santos"", ""José Maria da Costa Lima""
-- Se houver múltiplos nomes, escolha o que aparece como titular/beneficiário do documento
-- Ignore nomes de empresas, bancos, órgãos públicos
+- Se houver múltiplos nomes, escolha o que aparece como **titular/beneficiário/favorecido** do documento
+- **NUNCA** use nomes de empresas, bancos, órgãos públicos, prefeituras, secretarias como colaborador
 
 Retorne APENAS o JSON, sem explicações adicionais.";
 
