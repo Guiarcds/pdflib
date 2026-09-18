@@ -126,8 +126,77 @@ DATA: 15/09/2025
 
 ### 1. **ApiService** — Conversa com a IA
 - Extrai texto do PDF (usa biblioteca iText7)
+- Se PDF for escaneado/escrito à mão, **envia imagens diretamente para a IA** (Gemini lê handwriting)
+- Se texto extraído for suficiente, envia texto normal (mais rápido)
+- Automação: tenta iText7 → verifica qualidade → tenta OCR → envia imagens para IA
 - Envia para OpenRouter (API que acessa vários modelos: Gemini, Claude, GPT)
 - Recebe JSON de volta e transforma em objeto do C#
+
+### 1.1 PDF Digitalizado / Escrita à Mão
+
+Quando o PDF é **escaneado** ou tem **escrita à mão**, o iText7 não consegue extrair texto útil. Neste caso, o sistema:
+
+1. Tenta extrair texto com iText7
+2. Verifica se o texto contém datas/meses/anos reconhecíveis
+3. Se não contiver → **converte o PDF em imagens** (Magick.NET, 200 DPI)
+4. Envia até 8 páginas como **imagens base64** diretamente para a IA
+5. O Gemini (modelo com visão) lê o handwriting e extrai os dados
+
+**Por que imagens e não OCR?**
+- Tesseract não foi feito para reconhecer caligrafia
+- Modelos de IA com visão (Gemini, Claude, GPT-4V) são **muito melhores** em ler escrita à mão
+
+### 1.2 OCR — Reconhecimento de PDFs Escaneados
+
+Quando o iText7 não consegue extrair texto (PDF é imagem), o sistema automaticamente tenta OCR:
+
+1. **Magick.NET** converte cada página do PDF em imagem (300 DPI)
+2. **Tesseract** faz reconhecimento de texto na imagem (idioma: Português)
+3. O texto extraído é enviado para a IA junto com o prompt
+
+**Requisitos para OCR funcionar:**
+
+| Item | Detalhe |
+|------|---------|
+| **Pacote Tesseract** | Incluído no projeto (v5.2.0) |
+| **Magick.NET** | Incluído no projeto (v13.1.0) |
+| **Linguagem Português** | Necessário arquivo `por.traineddata` na pasta `tessdata/` |
+| **Ghostscript** | Necessário para Magick.NET renderizar PDFs |
+
+**Para instalar o Tesseract com português:**
+1. Baixe o instalador: https://github.com/UB-Mannheim/tesseract/wiki
+2. Na instalação, selecione o idioma **Portuguese**
+3. Ou baixe `por.traineddata`: https://github.com/tesseract-ocr/tessdata
+4. Coloque na pasta `tessdata/` ao lado do `.exe`
+
+**Para instalar Ghostscript (para Magick.NET renderizar PDFs):**
+1. Baixe: https://www.ghostscript.com/releases/gsdnld.html
+2. Instale e reinicie o computador
+
+### 1.2 Como o fluxo funciona (texto + imagens)
+
+```
+PDF recebido
+    │
+    ▼
+iText7 tenta extrair texto
+    │
+    ├── Texto com datas/meses? → Envia texto para IA (rápido)
+    │
+    └── Texto sem datas (digitalizado/à mão)?
+         │
+         ▼
+    Magick.NET converte PDF → Imagens (200 DPI)
+         │
+         ▼
+    Envia até 8 imagens como base64 para IA (Gemini lê handwriting)
+         │
+         ├── IA leu os dados? → Extrai JSON → Processa
+         │
+         └── IA não leu? → Vai para REVISAR
+```
+
+### 1.3 Texto vs Imagem — Qual caminho o sistema escolhe?
 
 ### 2. **ProcessamentoService** — O "Gerente" Principal
 Orquestra tudo:
@@ -228,7 +297,8 @@ Solução: Normaliza tudo para comparar:
 |--------|------------|------------------|
 | **Interface** | WPF (.NET 10) | Nativo Windows, bonito, performático |
 | **Arquitetura** | MVVM + Injeção de Dependência | Separa tela da lógica, testável |
-| **PDF** | iText7 | Melhor biblioteca para ler PDF em .NET |
+| **PDF (texto)** | iText7 | Melhor biblioteca para ler PDF em .NET |
+| **PDF (imagem/OCR)** | Magick.NET + Tesseract | Reconhecimento de PDFs escaneados |
 | **IA** | OpenRouter API | Acesso a dezenas de modelos (Gemini, Claude, GPT) |
 | **Fuzzy Match** | FuzzySharp | Compara nomes "parecidos" inteligentemente |
 | **Logs** | Serilog | Profissional, estruturado, rotativo por dia |
@@ -270,7 +340,8 @@ graph TD
 | **"API Key não configurada"** | Não colocou a chave nas Configurações | Vá em Configurações → cole sua chave OpenRouter |
 | **"Erro na API: 401/403"** | API Key inválida ou sem créditos | Verifique no site do OpenRouter |
 | **"Modelo não encontrado"** | Modelo errado no config | Use `google/gemini-2.0-flash-001` |
-| **PDF vai pra Revisar sempre** | PDF é imagem (escaneado) ou texto bagunçado | Use revisão manual ou OCR externo |
+| **PDF vai pra Revisar sempre** | PDF digitalizado/escrita à mão | Sistema envia imagens para IA (Gemini). Verifique se a imagem está clara o suficiente |
+| **PDF vai pra Revisar** | IA não leu os dados da imagem | Tente melhorar a qualidade do scan ou preencha manualmente na tela Revisão |
 | **Colaborador não encontrado** | Nome no PDF diferente da pasta | Use Revisão manual; sistema aprende criando pasta |
 | **Arquivo já existe** | Processou duas vezes o mesmo PDF | Sistema agora renomeia automático (`_1`, `_2`) |
 
@@ -290,6 +361,12 @@ graph TD
 ### Melhorar IA
 - Prompt principal: `ApiService.cs` → `SystemPrompt` (linha 15)
 - Adicione exemplos reais de PDFs seus no prompt
+
+### Melhorar OCR
+- Tesseract precisa do arquivo `por.traineddata` na pasta `tessdata/`
+- Quality do OCR depende da resolução da imagem (300 DPI padrão)
+- PDFs mais limpos = melhor extração por OCR
+- Para PDF muito complexo, considere pré-processar com ferramentas de limpeza
 
 ---
 

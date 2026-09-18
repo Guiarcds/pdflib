@@ -123,10 +123,12 @@ Arquivo de solution que referencia 4 projetos:
 |--------|--------|------------|
 | FuzzySharp | 2.0.2 | Comparação fuzzy de nomes |
 | itext7 | 9.7.0 | Extração de texto de PDFs |
+| Magick.NET-Q16-AnyCPU | 13.1.0 | Renderizar PDF como imagem para OCR |
 | Microsoft.Extensions.DependencyInjection | 10.0.11 | Container DI |
 | Newtonsoft.Json | 13.0.4 | Serialização JSON |
 | Serilog | 4.4.0 | Framework de logging |
 | Serilog.Sinks.File | 7.0.0 | Logs em arquivo |
+| Tesseract | 5.2.0 | Reconhecimento óptico de caracteres (OCR) |
 
 **Dependência:** Referencia OrganizadorDocumentos.Data
 
@@ -210,10 +212,12 @@ Arquivo de projeto da camada Core. Define dependências NuGet (FuzzySharp, itext
 |--------|--------|------------|
 | FuzzySharp | 2.0.2 | Comparação fuzzy de nomes |
 | itext7 | 9.7.0 | Extração de texto de PDFs |
+| Magick.NET-Q16-AnyCPU | 13.1.0 | Renderizar PDF como imagem para OCR |
 | Microsoft.Extensions.DependencyInjection | 10.0.11 | Container DI |
 | Newtonsoft.Json | 13.0.4 | Serialização JSON |
 | Serilog | 4.4.0 | Framework de logging |
 | Serilog.Sinks.File | 7.0.0 | Logs em arquivo |
+| Tesseract | 5.2.0 | Reconhecimento óptico de caracteres (OCR) |
 
 **Dependência:** Referencia OrganizadorDocumentos.Data
 
@@ -475,13 +479,74 @@ Implementa IConfiguracaoService. CRUD de AppConfig em JSON.
 Implementa IApiService. Comunicação com OpenRouter API.
 
 **Função — ExtrairDadosAsync:**
-1. Extrai texto do PDF localmente com iText7 (PdfReader + GetTextFromPage)
-2. Envia texto para https://openrouter.ai/api/v1/chat/completions com prompt detalhado
-3. Parseia resposta JSON da IA extraindo: colaborador, sigla, competência, data, OS, confiança
+1. Tenta extrair texto do PDF com iText7 (PdfReader + GetTextFromPage)
+2. Verifica se o texto contém padrão de competência (datas, nomes de meses, anos)
+3. **Se texto suficiente** → Envia texto para IA (caminho rápido)
+4. **Se texto insuficiente** (digitalizado/escrita à mão) → Envia imagens para IA:
+   a. Magick.NET converte páginas do PDF em imagens JPEG (200 DPI, até 8 páginas)
+   b. Imagens são enviadas como base64 no formato multimodal (OpenAI-compatible)
+   c. Gemini (modelo com visão) lê o handwriting e extrai os dados
+5. Parseia resposta JSON da IA extraindo: colaborador, sigla, competência, data, OS, confiança
 
-**Prompt do sistema (SystemPrompt):** Instruções detalhadas para extração de documentos brasileiros, com regras especiais para distinguir "Emitente" em RECIBOS vs VALES/BOLETOS.
+**Prompt do sistema (SystemPrompt):** Instruções detalhadas para extração de documentos brasileiros, com regras especiais para distinguir "Emitente" em RECIBOS vs VALES/BOLETOS, e regras para identificar competência mesmo em texto distorcido.
 
 **Configuração:** Timeout 120s, headers: Authorization (Bearer), HTTP-Referer, X-Title
+
+**Quando envia texto vs imagens:**
+| Tipo de PDF | Método | Modelo |
+|-------------|--------|--------|
+| Texto selecionável (PDF digital) | Texto via iText7 | Gemini Flash |
+| Digitalizado / Escrita à mão | Imagens base64 (multimodal) | Gemini Flash |
+
+**Fluxo completo:**
+```
+PDF → iText7 → texto?
+     │
+     ├── Texto com datas? → Envia texto para IA → ✅
+     │
+     └── Texto sem datas? (digitalizado/à mão)
+          │
+          ▼
+         Magick.NET converte PDF → Imagens JPEG (200 DPI, até 8 páginas)
+          │
+          ▼
+         Envia imagens como base64 para IA (multimodal)
+          │
+          ├── IA leu os dados? → Extrai JSON → ✅
+          │
+          └── IA não leu? → Vai para REVISAR
+```
+
+**Formato da requisição multimodal (OpenAI-compatible):**
+```json
+{
+  "messages": [{
+    "role": "user",
+    "content": [
+      {"type": "text", "text": "Analise este documento..."},
+      {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,..."}},
+      {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,..."}}
+    ]
+  }]
+}
+```
+
+**OCR — Requisitos:**
+- `tessdata/por.traineddata` deve existir na pasta do aplicativo (baixar de https://github.com/tesseract-ocr/tessdata)
+- Ghostscript deve estar instalado (para Magick.NET renderizar PDFs)
+- Pacotes NuGet: Tesseract 5.2.0, Magick.NET-Q16-AnyCPU 13.1.0
+
+**Nota sobre handwriting (escrita à mão):**
+- Tesseract **NÃO** é eficaz para reconhecer caligrafia
+- Para PDFs com escrita à mão, o sistema envia imagens diretamente para IA (Gemini)
+- A IA com visão é muito superior em ler handwriting comparado ao OCR tradicional
+
+PDF → iText7 → texto? → SIM → envia para IA
+                   → NÃO → Magick.NET (PDF → imagem)
+                               → Tesseract (OCR português)
+                                   → texto? → SIM → envia para IA
+                                            → NÃO → REVISAR
+```
 
 #### 5.6.7 `FileService.cs` — "Operador de Arquivos"
 
