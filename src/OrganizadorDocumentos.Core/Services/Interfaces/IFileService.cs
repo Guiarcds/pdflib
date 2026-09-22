@@ -12,4 +12,9 @@ public interface IFileService
     void CriarPasta(string caminho);
     List<string> ListarPdfs(string pasta);
     string NomeArquivoUnico(string caminhoDestino, string nomeBase, string extensao);
+
+    Task<List<string>> DividirPdfAsync(string caminhoPdf, List<DocumentoFinanceiro> documentos, string pastaSaida);
+
+    Task<List<string>> AplicarCorrecoesAsync(string caminhoPdf, List<PageDecision> decisoes, string pastaTemp);
+    Task<List<string>> SplitUmaPaginaPorPdfAsync(List<string> imagensCorrigidas, string pastaTemp);
 }

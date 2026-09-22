@@ -31,23 +31,109 @@ public class ProcessamentoService : IProcessamentoService
         _log = log;
     }
 
+    public async Task<List<ResultadoProcessamento>> ProcessarPdfCompletoAsync(string caminhoPdf)
+    {
+        var resultados = new List<ResultadoProcessamento>();
+        string? pastaTemp = null;
+
+        try
+        {
+            _log.Informacao($"Processando (novo fluxo 4 fases): {Path.GetFileName(caminhoPdf)}");
+
+            var config = _configuracao.ObterConfiguracao();
+            pastaTemp = Path.Combine(config.PastaRaiz, "TEMP_PROCESSAMENTO", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(pastaTemp);
+
+            var decisoes = await _apiService.AnalisarEstruturaPdfAsync(caminhoPdf);
+            _log.Informacao($"Fase 1 concluída: {decisoes.Count} decisão(ões) recebidas, {decisoes.Count(d => d.Action == PageAction.Discard)} página(s) descartada(s)");
+
+            if (decisoes.Count == 0)
+            {
+                resultados.Add(new ResultadoProcessamento
+                {
+                    ArquivoOrigem = caminhoPdf,
+                    Status = StatusProcessamento.Revisar,
+                    Mensagem = "IA não retornou decisões para nenhuma página"
+                });
+                return resultados;
+            }
+
+            var imagensCorrigidas = await _fileService.AplicarCorrecoesAsync(caminhoPdf, decisoes, pastaTemp);
+
+            if (imagensCorrigidas.Count == 0)
+            {
+                resultados.Add(new ResultadoProcessamento
+                {
+                    ArquivoOrigem = caminhoPdf,
+                    Status = StatusProcessamento.Revisar,
+                    Mensagem = "Todas as páginas foram descartadas (em branco/ruído)"
+                });
+                return resultados;
+            }
+
+            var pdfsIndividuais = await _fileService.SplitUmaPaginaPorPdfAsync(imagensCorrigidas, pastaTemp);
+
+            _log.Informacao($"Fase 4: extraindo dados de {pdfsIndividuais.Count} documento(s) individual(is)");
+
+            foreach (var pdf in pdfsIndividuais)
+            {
+                var dados = await _apiService.ExtrairDadosDocumentoAsync(pdf);
+                var resultado = await ProcessarDocumentoIndividualAsync(pdf, dados);
+                resultados.Add(resultado);
+                DocumentoProcessado?.Invoke(this, resultado);
+            }
+
+            LimparTemp(pastaTemp);
+        }
+        catch (Exception ex)
+        {
+            _log.Erro($"Erro no processamento completo: {caminhoPdf}", ex);
+            resultados.Add(new ResultadoProcessamento
+            {
+                ArquivoOrigem = caminhoPdf,
+                Status = StatusProcessamento.Erro,
+                Mensagem = $"Erro geral: {ex.Message}"
+            });
+
+            if (pastaTemp != null)
+                LimparTemp(pastaTemp);
+        }
+
+        return resultados;
+    }
+
     public async Task<ResultadoProcessamento> ProcessarDocumentoAsync(string caminhoPdf)
     {
+        var resultados = await ProcessarPdfCompletoAsync(caminhoPdf);
+
+        var principal = resultados.FirstOrDefault() ?? new ResultadoProcessamento
+        {
+            ArquivoOrigem = caminhoPdf,
+            Status = StatusProcessamento.Erro,
+            Mensagem = "Nenhum documento extraído"
+        };
+
+        foreach (var r in resultados)
+        {
+            DocumentoProcessado?.Invoke(this, r);
+        }
+
+        return principal;
+    }
+
+    private async Task<ResultadoProcessamento> ProcessarDocumentoIndividualAsync(string caminhoPdf, DocumentoFinanceiro dados)
+    {
+        const double LIMIAR_CONFIANCA = 0.70;
+
         var resultado = new ResultadoProcessamento
         {
             ArquivoOrigem = caminhoPdf,
+            DadosExtraidos = dados,
             Status = StatusProcessamento.Erro
         };
 
         try
         {
-            _log.Informacao($"Processando: {Path.GetFileName(caminhoPdf)}");
-
-            var dados = await _apiService.ExtrairDadosAsync(caminhoPdf);
-            resultado.DadosExtraidos = dados;
-
-            const double LIMIAR_CONFIANCA = 0.70;
-
             if (!dados.TemColaborador || dados.Confianca < LIMIAR_CONFIANCA)
             {
                 resultado.Status = StatusProcessamento.Revisar;
@@ -115,28 +201,41 @@ public class ProcessamentoService : IProcessamentoService
                     }
                 }
             }
+
+            if (resultado.Status == StatusProcessamento.Revisar && File.Exists(caminhoPdf))
+            {
+                var config = _configuracao.ObterConfiguracao();
+                var pastaRevisar = Path.Combine(config.PastaRaiz, config.PastaRevisar);
+                _fileService.CriarPasta(pastaRevisar);
+                var nomeArquivo = Path.GetFileName(caminhoPdf);
+                var destinoRevisao = Path.Combine(pastaRevisar, nomeArquivo);
+                _fileService.MoverArquivo(caminhoPdf, destinoRevisao, sobrescrever: true);
+                resultado.Mensagem += $" | Movido para revisão: {destinoRevisao}";
+                _log.Informacao($"Documento movido para revisão: {destinoRevisao}");
+            }
         }
         catch (Exception ex)
         {
             resultado.Status = StatusProcessamento.Erro;
-            resultado.Mensagem = $"Erro ao processar documento: {ex.Message}";
+            resultado.Mensagem = $"Erro ao processar documento individual: {ex.Message}";
             _log.Erro(resultado.Mensagem, ex);
         }
 
-        if (resultado.Status == StatusProcessamento.Revisar && File.Exists(caminhoPdf))
-        {
-            var config = _configuracao.ObterConfiguracao();
-            var pastaRevisar = Path.Combine(config.PastaRaiz, config.PastaRevisar);
-            _fileService.CriarPasta(pastaRevisar);
-            var nomeArquivo = Path.GetFileName(caminhoPdf);
-            var destinoRevisao = Path.Combine(pastaRevisar, nomeArquivo);
-            _fileService.MoverArquivo(caminhoPdf, destinoRevisao, sobrescrever: true);
-            resultado.Mensagem += $" | Movido para revisão: {destinoRevisao}";
-            _log.Informacao($"Documento movido para revisão: {destinoRevisao}");
-        }
-
-        DocumentoProcessado?.Invoke(this, resultado);
         return resultado;
+    }
+
+    private void LimparTemp(string pastaTemp)
+    {
+        try
+        {
+            if (Directory.Exists(pastaTemp))
+                Directory.Delete(pastaTemp, true);
+            _log.Debug($"Pasta temp limpa: {pastaTemp}");
+        }
+        catch (Exception ex)
+        {
+            _log.Aviso($"Não foi possível limpar pasta temp: {pastaTemp} - {ex.Message}");
+        }
     }
 
     public async Task<List<ResultadoProcessamento>> ProcessarLoteAsync(
@@ -148,8 +247,8 @@ public class ProcessamentoService : IProcessamentoService
 
         foreach (var arquivo in arquivos)
         {
-            var resultado = await ProcessarDocumentoAsync(arquivo);
-            resultados.Add(resultado);
+            var resultadosPdf = await ProcessarPdfCompletoAsync(arquivo);
+            resultados.AddRange(resultadosPdf);
 
             processados++;
             progress?.Report(new ProgressoProcessamento

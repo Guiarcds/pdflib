@@ -4,6 +4,7 @@ using OrganizadorDocumentos.Core.Models;
 
 public interface IProcessamentoService
 {
+    Task<List<ResultadoProcessamento>> ProcessarPdfCompletoAsync(string caminhoPdf);
     Task<ResultadoProcessamento> ProcessarDocumentoAsync(string caminhoPdf);
     Task<List<ResultadoProcessamento>> ProcessarLoteAsync(List<string> arquivos, IProgress<ProgressoProcessamento>? progress = null);
     event EventHandler<ResultadoProcessamento>? DocumentoProcessado;
