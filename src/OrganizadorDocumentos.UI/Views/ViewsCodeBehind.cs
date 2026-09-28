@@ -3,17 +3,9 @@ using System.Windows.Controls;
 
 namespace OrganizadorDocumentos.UI.Views;
 
-public partial class DashboardView : UserControl
+public partial class VisaoGeralView : UserControl
 {
-    public DashboardView()
-    {
-        InitializeComponent();
-    }
-}
-
-public partial class MapeamentoView : UserControl
-{
-    public MapeamentoView()
+    public VisaoGeralView()
     {
         InitializeComponent();
     }

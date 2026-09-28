@@ -43,8 +43,8 @@ public partial class App : Application
         services.AddSingleton<IApiService, ApiService>();
         services.AddSingleton<IProcessamentoService, ProcessamentoService>();
 
-        services.AddSingleton<DashboardViewModel>();
         services.AddSingleton<MapeamentoViewModel>();
+        services.AddSingleton<VisaoGeralViewModel>();
         services.AddSingleton<ProcessamentoViewModel>();
         services.AddSingleton<RevisaoViewModel>();
         services.AddSingleton<ConfiguracaoViewModel>();

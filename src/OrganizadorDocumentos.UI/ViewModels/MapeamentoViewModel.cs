@@ -18,20 +18,6 @@ public class MapeamentoViewModel : ViewModelBase
         set => SetProperty(ref _totalColaboradores, value);
     }
 
-    private int _totalAnos;
-    public int TotalAnos
-    {
-        get => _totalAnos;
-        set => SetProperty(ref _totalAnos, value);
-    }
-
-    private int _totalPastasMensais;
-    public int TotalPastasMensais
-    {
-        get => _totalPastasMensais;
-        set => SetProperty(ref _totalPastasMensais, value);
-    }
-
     private bool _mapeando;
     public bool Mapeando
     {
@@ -106,8 +92,6 @@ public class MapeamentoViewModel : ViewModelBase
     private void AtualizarExibicao(EstruturaPasta estrutura)
     {
         TotalColaboradores = estrutura.TotalColaboradores;
-        TotalAnos = estrutura.TotalAnos;
-        TotalPastasMensais = estrutura.TotalPastasMensais;
 
         Colaboradores.Clear();
         foreach (var col in estrutura.Colaboradores.OrderBy(c => c.NomePasta))

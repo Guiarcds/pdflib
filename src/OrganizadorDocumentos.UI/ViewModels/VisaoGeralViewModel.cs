@@ -2,7 +2,7 @@ using OrganizadorDocumentos.Core.Services.Interfaces;
 
 namespace OrganizadorDocumentos.UI.ViewModels;
 
-public class DashboardViewModel : ViewModelBase
+public class VisaoGeralViewModel : ViewModelBase
 {
     private readonly IProcessamentoService _processamentoService;
     private readonly IMapeamentoService _mapeamentoService;
@@ -42,16 +42,27 @@ public class DashboardViewModel : ViewModelBase
         set => SetProperty(ref _processando, value);
     }
 
-    public DashboardViewModel(IProcessamentoService processamentoService, IMapeamentoService mapeamentoService)
+    public MapeamentoViewModel Mapeamento { get; }
+
+    public VisaoGeralViewModel(
+        IProcessamentoService processamentoService,
+        IMapeamentoService mapeamentoService,
+        MapeamentoViewModel mapeamentoViewModel)
     {
         _processamentoService = processamentoService;
         _mapeamentoService = mapeamentoService;
+        Mapeamento = mapeamentoViewModel;
+
+        _mapeamentoService.MapeamentoAtualizado += OnMapeamentoAtualizado;
+
         AtualizarEstatisticas();
     }
 
     public void AtualizarEstatisticas()
     {
-        var estrutura = _mapeamentoService.ObterMapeamento();
+        _mapeamentoService.ObterMapeamento();
         UltimaAtualizacao = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
     }
+
+    private void OnMapeamentoAtualizado(object? sender, MapeamentoEventArgs e) => AtualizarEstatisticas();
 }

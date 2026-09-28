@@ -1,4 +1,4 @@
-<UserControl x:Class="OrganizadorDocumentos.UI.Views.DashboardView"
+<UserControl x:Class="OrganizadorDocumentos.UI.Views.VisaoGeralView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -7,7 +7,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
-            <TextBlock Text="Dashboard" Style="{StaticResource HeaderTextStyle}"/>
+            <TextBlock Text="Visão Geral" Style="{StaticResource HeaderTextStyle}"/>
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -50,14 +50,44 @@
                 </StackPanel>
             </Border>
 
+            <Separator Background="#D5D8DC" Margin="10,15"/>
+
+            <TextBlock Text="Mapeamento da Estrutura" Style="{StaticResource HeaderTextStyle}"/>
+
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
-                    <TextBlock Text="Regra Principal" FontSize="16" FontWeight="Bold"
+                    <TextBlock Text="Colaboradores" Style="{StaticResource LabelTextStyle}"/>
+                    <TextBlock Text="{Binding Mapeamento.TotalColaboradores}" FontSize="36" FontWeight="Bold"
+                               Foreground="#3498DB"/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <Button Content="[ Atualizar estrutura ]"
+                        Command="{Binding Mapeamento.AtualizarEstruturaCommand}"
+                        Style="{StaticResource ActionButtonStyle}"
+                        IsEnabled="{Binding Mapeamento.Mapeando, Converter={StaticResource InverseBooleanConverter}}"/>
+                <TextBlock Text="{Binding Mapeamento.StatusMapeamento}" VerticalAlignment="Center" Margin="15,0,0,0"
+                           Foreground="#7F8C8D"/>
+            </StackPanel>
+
+            <ProgressBar IsIndeterminate="{Binding Mapeamento.Mapeando}" Height="5" Margin="0,0,0,20"
+                         Visibility="{Binding Mapeamento.Mapeando, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+            <Border Style="{StaticResource CardStyle}">
+                <StackPanel>
+                    <TextBlock Text="Colaboradores Mapeados" FontSize="16" FontWeight="Bold"
                                Foreground="#2C3E50" Margin="0,0,0,10"/>
-                    <TextBlock Text="NÃO CRIAR SE JÁ EXISTIR" FontSize="18" FontWeight="Bold"
-                               Foreground="#E74C3C" HorizontalAlignment="Center" Margin="0,5"/>
-                    <TextBlock Text="O sistema preserva a estrutura existente e cria apenas o que estiver ausente."
-                               TextWrapping="Wrap" Foreground="#7F8C8D" TextAlignment="Center"/>
+                    <ListView ItemsSource="{Binding Mapeamento.Colaboradores}" MaxHeight="300"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Pasta" DisplayMemberBinding="{Binding NomePasta}" Width="200"/>
+                                <GridViewColumn Header="Nome Normalizado" DisplayMemberBinding="{Binding NomeNormalizado}" Width="200"/>
+                                <GridViewColumn Header="Anos" DisplayMemberBinding="{Binding Anos.Count}" Width="80"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
                 </StackPanel>
             </Border>
         </StackPanel>

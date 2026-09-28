@@ -11,11 +11,8 @@
             <converters:FileNameConverter x:Key="FileNameConverter"/>
             <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
 
-            <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
-                <views:DashboardView />
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type vm:MapeamentoViewModel}">
-                <views:MapeamentoView />
+            <DataTemplate DataType="{x:Type vm:VisaoGeralViewModel}">
+                <views:VisaoGeralView />
             </DataTemplate>
             <DataTemplate DataType="{x:Type vm:ProcessamentoViewModel}">
                 <views:ProcessamentoView />

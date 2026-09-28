@@ -24,14 +24,12 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _statusSistema, value);
     }
 
-    public ICommand NavegarDashboardCommand { get; }
-    public ICommand NavegarMapeamentoCommand { get; }
+    public ICommand NavegarVisaoGeralCommand { get; }
     public ICommand NavegarProcessamentoCommand { get; }
     public ICommand NavegarRevisaoCommand { get; }
     public ICommand NavegarConfiguracaoCommand { get; }
 
-    public DashboardViewModel DashboardViewModel { get; }
-    public MapeamentoViewModel MapeamentoViewModel { get; }
+    public VisaoGeralViewModel VisaoGeralViewModel { get; }
     public ProcessamentoViewModel ProcessamentoViewModel { get; }
     public RevisaoViewModel RevisaoViewModel { get; }
     public ConfiguracaoViewModel ConfiguracaoViewModel { get; }
@@ -43,8 +41,7 @@ public class MainViewModel : ViewModelBase
         IMapeamentoService mapeamentoService,
         IProcessamentoService processamentoService,
         ILogService logService,
-        DashboardViewModel dashboardViewModel,
-        MapeamentoViewModel mapeamentoViewModel,
+        VisaoGeralViewModel visaoGeralViewModel,
         ProcessamentoViewModel processamentoViewModel,
         RevisaoViewModel revisaoViewModel,
         ConfiguracaoViewModel configuracaoViewModel)
@@ -54,14 +51,12 @@ public class MainViewModel : ViewModelBase
         _processamentoService = processamentoService;
         _logService = logService;
 
-        DashboardViewModel = dashboardViewModel;
-        MapeamentoViewModel = mapeamentoViewModel;
+        VisaoGeralViewModel = visaoGeralViewModel;
         ProcessamentoViewModel = processamentoViewModel;
         RevisaoViewModel = revisaoViewModel;
         ConfiguracaoViewModel = configuracaoViewModel;
 
-        NavegarDashboardCommand = new RelayCommand(_ => NavegarPara("Dashboard"));
-        NavegarMapeamentoCommand = new RelayCommand(_ => NavegarPara("Mapeamento"));
+        NavegarVisaoGeralCommand = new RelayCommand(_ => NavegarPara("Visão Geral"));
         NavegarProcessamentoCommand = new RelayCommand(_ => NavegarPara("Processamento"));
         NavegarRevisaoCommand = new RelayCommand(_ => NavegarPara("Revisão"));
         NavegarConfiguracaoCommand = new RelayCommand(_ => NavegarPara("Configurações"));

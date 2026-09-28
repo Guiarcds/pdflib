@@ -31,9 +31,7 @@
                 </StackPanel>
 
                 <StackPanel Margin="0,20,0,0">
-                    <Button Content="Dashboard" Command="{Binding NavegarDashboardCommand}"
-                            Style="{StaticResource MenuButtonStyle}" Margin="0,2"/>
-                    <Button Content="Mapeamento" Command="{Binding NavegarMapeamentoCommand}"
+                    <Button Content="Visão Geral" Command="{Binding NavegarVisaoGeralCommand}"
                             Style="{StaticResource MenuButtonStyle}" Margin="0,2"/>
                     <Button Content="Processamento" Command="{Binding NavegarProcessamentoCommand}"
                             Style="{StaticResource MenuButtonStyle}" Margin="0,2"/>
