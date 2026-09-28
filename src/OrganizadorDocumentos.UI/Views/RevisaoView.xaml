@@ -116,21 +116,36 @@
                                  Margin="0,5,0,5" Padding="5" Height="30"/>
 
                         <!-- Sigla -->
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Sigla (VT/VA/AC/BO/CO/SP/DE/SE/SB/OS):" 
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Sigla / Tipo:"
                                    VerticalAlignment="Center" Margin="0,5,10,5" FontWeight="SemiBold"/>
-                        <ComboBox Grid.Row="1" Grid.Column="1" Text="{Binding Sigla, UpdateSourceTrigger=PropertyChanged}"
-                                  IsEditable="True" Margin="0,5,0,5" Padding="5" Height="30">
-                            <sys:String>VT</sys:String>
-                            <sys:String>VA</sys:String>
-                            <sys:String>AC</sys:String>
-                            <sys:String>BO</sys:String>
-                            <sys:String>CO</sys:String>
-                            <sys:String>SP</sys:String>
-                            <sys:String>DE</sys:String>
-                            <sys:String>SE</sys:String>
-                            <sys:String>SB</sys:String>
-                            <sys:String>OS</sys:String>
-                        </ComboBox>
+                        <Grid Grid.Row="1" Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding Sigla, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,5,0,0" Padding="5" Height="30"/>
+                            <ComboBox Grid.Row="0" Grid.Column="1" IsEditable="True" Width="70" Margin="5,5,0,0" Padding="3" Height="30"
+                                      Text="{Binding Sigla, UpdateSourceTrigger=PropertyChanged}">
+                                <sys:String>VT</sys:String>
+                                <sys:String>VA</sys:String>
+                                <sys:String>AC</sys:String>
+                                <sys:String>BO</sys:String>
+                                <sys:String>CO</sys:String>
+                                <sys:String>SP</sys:String>
+                                <sys:String>DE</sys:String>
+                                <sys:String>SE</sys:String>
+                                <sys:String>SB</sys:String>
+                                <sys:String>OS</sys:String>
+                            </ComboBox>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                       Text="Aceita qualquer texto (ex.: Férias). Espaços viram &quot;_&quot; no nome do arquivo."
+                                       Margin="2,4,0,5" Foreground="#7F8C8D" FontSize="11"/>
+                        </Grid>
 
                         <!-- Competência -->
                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Competência (Mês/Ano):" 

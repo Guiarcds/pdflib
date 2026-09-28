@@ -65,6 +65,8 @@ Pasta Raiz (você define)
 | SB | Salário Base |
 | OS | Vale por OS |
 
+Na revisão manual o campo **Sigla/Tipo** aceita qualquer texto (ex.: `Férias`, `13º salário`); espaços são trocados por `_` e o nome do arquivo (e a pasta do colaborador) é gravado em caixa alta.
+
 ## Nome do Arquivo
 
 ```

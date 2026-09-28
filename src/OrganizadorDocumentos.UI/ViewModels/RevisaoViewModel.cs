@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -99,8 +100,6 @@ public class RevisaoViewModel : ViewModelBase
         get => _temArquivoSelecionado;
         set => SetProperty(ref _temArquivoSelecionado, value);
     }
-
-    private readonly string[] _siglasValidas = new[] { "VT", "VA", "AC", "BO", "CO", "SP", "DE", "SE", "SB", "OS" };
 
     private ImageSource? _previewDocumento;
     public ImageSource? PreviewDocumento
@@ -270,10 +269,9 @@ public class RevisaoViewModel : ViewModelBase
 
     private bool PodeProcessar()
     {
-        return TemArquivoSelecionado 
+        return TemArquivoSelecionado
             && !string.IsNullOrWhiteSpace(Colaborador)
             && !string.IsNullOrWhiteSpace(Sigla)
-            && _siglasValidas.Contains(Sigla.ToUpperInvariant())
             && CompetenciaMes.HasValue && CompetenciaMes.Value >= 1 && CompetenciaMes.Value <= 12
             && CompetenciaAno.HasValue && CompetenciaAno.Value >= 2000 && CompetenciaAno.Value <= 2100;
     }
@@ -289,7 +287,7 @@ public class RevisaoViewModel : ViewModelBase
         try
         {
             var config = _configuracaoService.ObterConfiguracao();
-            var siglaUpper = Sigla.ToUpperInvariant();
+            var siglaNormalizada = NormalizarParaNome(Sigla);
 
             // Verifica/cria pasta do colaborador
             var estrutura = _mapeamentoService.ObterMapeamento();
@@ -301,9 +299,7 @@ public class RevisaoViewModel : ViewModelBase
             {
                 // Cria novo colaborador
                 var pastaColaboradores = Path.Combine(config.PastaRaiz, config.PastaColaboradores);
-                var nomePasta = Colaborador.ToUpperInvariant()
-                    .Replace(" ", "_")
-                    .Replace("-", "_");
+                var nomePasta = NormalizarParaNome(Colaborador).Replace("-", "_");
                 pastaColaborador = Path.Combine(pastaColaboradores, nomePasta);
                 _fileService.CriarPasta(pastaColaborador);
                 
@@ -325,8 +321,7 @@ public class RevisaoViewModel : ViewModelBase
             var pastaMes = _fileService.BuscarPastaMes(CompetenciaMes.Value, CompetenciaAno.Value, pastaAno);
 
             // Gera nome do arquivo
-            var nomeArquivo = GerarNomeArquivo(siglaUpper, Colaborador, CompetenciaMes.Value, CompetenciaAno.Value, NumeroOS);
-            var caminhoDestino = Path.Combine(pastaMes, nomeArquivo);
+            var nomeArquivo = GerarNomeArquivo(siglaNormalizada, Colaborador, CompetenciaMes.Value, CompetenciaAno.Value, NumeroOS);            var caminhoDestino = Path.Combine(pastaMes, nomeArquivo);
 
             if (_fileService.ArquivoExiste(caminhoDestino))
             {
@@ -367,13 +362,20 @@ public class RevisaoViewModel : ViewModelBase
 
     private string GerarNomeArquivo(string sigla, string colaborador, int mes, int ano, string numeroOS)
     {
-        var nomeColaborador = colaborador.Replace(" ", "_");
+        var nomeColaborador = NormalizarParaNome(colaborador);
+        var siglaNormalizada = NormalizarParaNome(sigla);
 
-        if (sigla == "OS" && !string.IsNullOrWhiteSpace(numeroOS))
+        if (siglaNormalizada == "OS" && !string.IsNullOrWhiteSpace(numeroOS))
         {
-            return $"OS_{nomeColaborador}_OS-{numeroOS}.pdf";
+            return $"OS_{nomeColaborador}_OS-{NormalizarParaNome(numeroOS)}.pdf";
         }
 
-        return $"{sigla}_{nomeColaborador}_{mes:D2}-{ano}.pdf";
+        return $"{siglaNormalizada}_{nomeColaborador}_{mes:D2}-{ano}.pdf";
+    }
+
+    private static string NormalizarParaNome(string texto)
+    {
+        var semEspacosDuplos = Regex.Replace(texto.Trim(), @"\s+", "_");
+        return semEspacosDuplos.ToUpperInvariant();
     }
 }

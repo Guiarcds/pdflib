@@ -696,8 +696,9 @@ VM da tela de revisão. Para documentos que a IA não entendeu.
 - Visualizador (somente zoom): PreviewDocumento (ImageSource), Zoom (25-400%), CarregandoPreview, PreviewStatus
 - Comandos: ZoomInCommand, ZoomOutCommand, ZoomResetCommand (passos de 25%)
 - CarregarPreviewAsync → Rasteriza a 1ª página do PDF selecionado via IFileService.RenderizarPaginaPdfAsync (bitmap congelado para uso em thread de UI); _previewSequencia evita corrida ao trocar de arquivo rápido
-- PodeProcessar() → Valida que todos os campos obrigatórios estão preenchidos e sigla é válida
-- GerarNomeArquivo → Gera nome no padrão {Sigla}_{Colaborador}_{MM-AAAA}.pdf ou OS_{Colaborador}_OS-{Numero}.pdf
+- PodeProcessar() → Valida que os campos obrigatórios estão preenchidos (Sigla aceita qualquer texto)
+- GerarNomeArquivo → Gera nome no padrão {SIGLA}_{COLABORADOR}_{MM-AAAA}.pdf ou OS_{COLABORADOR}_OS-{NUMERO}.pdf (Sigla, Colaborador e Número OS em caixa alta)
+- NormalizarParaNome → Aplica trim, troca qualquer sequência de espaços por "_" e devolve em caixa alta; usado na sigla, no colaborador (também na criação da pasta) e no número da OS
 
 #### 6.5.8 `ConfiguracaoViewModel.cs` — Configurações do Usuário
 
@@ -754,7 +755,7 @@ Tela de revisão manual com:
   - Progress bar durante a renderização e mensagem de erro quando o PDF não pode ser exibido
 - Formulário (visível apenas se arquivo selecionado):
   - TextBox Colaborador
-  - ComboBox Sigla (10 siglas fixas: VT, VA, AC, BO, CO, SP, DE, SE, SB, OS)
+  - Campo Sigla/Tipo: TextBox de texto livre + ComboBox de sugestão (VT, VA, AC, BO, CO, SP, DE, SE, SB, OS). Aceita qualquer texto; espaços viram "_" no nome do arquivo
   - ComboBox Mês (1-12) e Ano (2024-2028)
   - TextBox Data e NumeroOS
   - Botões Processar (verde) e Limpar (laranja)
