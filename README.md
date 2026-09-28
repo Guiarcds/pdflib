@@ -19,8 +19,8 @@ Duplo clique em **`Iniciar.bat`** (ou `Compilar e Iniciar.bat` se precisar compi
 
 ### 3. Mapear Pastas
 
-1. Clique em **Mapeamento**
-2. Clique em **Atualizar estrutura**
+1. Clique em **Visão Geral**
+2. Na seção **Mapeamento da Estrutura**, clique em **Atualizar estrutura**
 3. O sistema identifica colaboradores, anos e meses existentes
 
 ### 4. Processar PDFs

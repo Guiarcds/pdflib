@@ -603,7 +603,7 @@ Função: Entry point da aplicação WPF.
 3. Cria diretórios %APPDATA%\OrganizadorDocumentos e \logs
 4. Define caminhos: config.json e log_YYYY-MM-DD.txt
 5. Registra serviços: ConfiguracaoService, LogService, NormalizacaoService, FileService, MapeamentoService, ApiService, ProcessamentoService
-6. Registra ViewModels: Dashboard, Mapeamento, Processamento, Revisao, Configuracao
+6. Registra ViewModels: VisaoGeral, Mapeamento, Processamento, Revisao, Configuracao
 7. Registra MainViewModel e MainWindow
 8. Resolve MainWindow do container e exibe
 
@@ -615,16 +615,16 @@ Função: Janela principal com layout de dois painéis.
 
 - Coluna 1 (220px): Barra lateral escura (#2C3E50) com:
   - Header "Organizador de Documentos"
-  - 5 botões de navegação (Dashboard, Mapeamento, Processamento, Revisão, Configurações) com comandos do MainViewModel
+  - 4 botões de navegação (Visão Geral, Processamento, Revisão, Configurações) com comandos do MainViewModel
   - Status do sistema no rodapé
 - Coluna 2 (*): ContentControl (ContentArea) que exibe a view ativa
 - Title bound a ViewModel.Titulo, Height=700, Width=1100
 
 ### 6.4 `MainWindow.xaml.cs`
 
-Construtor: Recebe MainViewModel via DI. Cria as 5 Views, atribui DataContexts, assina NavegacaoSolicitada. Ao iniciar, navega automaticamente para Dashboard.
+Construtor: Recebe MainViewModel via DI. Cria as 4 Views, atribui DataContexts, assina NavegacaoSolicitada. Ao iniciar, navega automaticamente para Visão Geral.
 
-OnNavegacaoSolicitada: Troca ContentArea.Content entre as 5 views com base no nome da view recebido.
+OnNavegacaoSolicitada: Troca ContentArea.Content entre as 4 views com base no nome da view recebido.
 
 ---
 
@@ -647,22 +647,24 @@ Implementação do padrão ICommand para MVVM.
 
 VM raiz da janela principal.
 - Propriedades: Titulo, StatusSistema
-- 5 sub-ViewModels injetados: Dashboard, Mapeamento, Processamento, Revisao, Configuracao
-- 5 comandos de navegação (NavegarDashboardCommand, etc.) → disparam evento NavegacaoSolicitada
+- 4 sub-ViewModels injetados: VisaoGeral, Processamento, Revisao, Configuracao
+- 4 comandos de navegação (NavegarVisaoGeralCommand, etc.) → disparam evento NavegacaoSolicitada
 - NavegarPara(string) → atualiza título e dispara navegação
 
-#### 6.5.4 `DashboardViewModel.cs` — Painel de Estatísticas
+#### 6.5.4 `VisaoGeralViewModel.cs` — Dashboard + Mapeamento
 
-Exibe métricas gerais do sistema.
-- Injeita: IProcessamentoService, IMapeamentoService
+VM da tela unificada "Visão Geral" (antigo DashboardViewModel).
+- Injeita: IProcessamentoService, IMapeamentoService, MapeamentoViewModel
 - Propriedades: TotalProcessados, TotalRevisar, TotalErros, UltimaAtualizacao, Processando
+- Mapeamento (MapeamentoViewModel) → seção de mapeamento embutida na mesma tela
 - AtualizarEstatisticas() → Atualiza timestamp de última atualização
+- Assina IMapeamentoService.MapeamentoAtualizado para reagir a re-mapeamentos
 
 #### 6.5.5 `MapeamentoViewModel.cs` — Mapeamento de Pastas
 
-VM da tela de mapeamento.
+VM da seção de mapeamento (ex-tela Mapeamento).
 - Injeita: IMapeamentoService, IConfiguracaoService, ILogService
-- Propriedades: TotalColaboradores, TotalAnos, TotalPastasMensais, Mapeando, StatusMapeamento
+- Propriedades: TotalColaboradores, Mapeando, StatusMapeamento
 - Colaboradores (ObservableCollection<Colaborador>) — Lista para ListView
 - AtualizarEstruturaCommand → Executa MapearEstrutura em background thread via Task.Run, atualiza UI
 - CarregarMapeamentoExistente() → Carrega cache ao iniciar
@@ -708,27 +710,23 @@ VM da tela de configurações.
 
 #### 6.6.1 `ViewsCodeBehind.cs`
 
-Contém code-behind de todas as 5 views como partial classes.
-- DashboardView, MapeamentoView, ProcessamentoView, RevisaoView — Construtores vazios (apenas InitializeComponent())
+Contém code-behind de todas as 4 views como partial classes.
+- VisaoGeralView, ProcessamentoView, RevisaoView — Construtores vazios (apenas InitializeComponent())
 - ConfiguracaoView — Possui lógica de sincronização da API Key:
   - _restaurandoSenha (flag anti-feedback) para evitar loop entre PasswordBox e ViewModel
   - ConfiguracaoView_Loaded → Preenche PasswordBox do VM
   - ApiKeyPasswordBox_PasswordChanged → Sincroniza de volta para VM
 
-#### 6.6.2 `DashboardView.xaml`
+#### 6.6.2 `VisaoGeralView.xaml`
 
-Tela de dashboard com:
+Tela única que substituiu DashboardView.xaml + MapeamentoView.xaml, com:
 - 3 cards de métricas (Processados verde, Revisar laranja, Erros vermelho)
 - Card "Informações do Sistema" — Data/hora da última atualização
-- Card "Regra Principal" — "NÃO CRIAR SE JÁ EXISTIR"
-
-#### 6.6.3 `MapeamentoView.xaml`
-
-Tela de mapeamento com:
-- Botão "Atualizar estrutura" (desabilita durante mapeamento)
-- Progress bar indeterminate durante operação
-- 3 cards de contagem (Colaboradores azul, Anos roxo, Pastas Mensais turquesa)
-- ListView de colaboradores (Pasta, Nome Normalizado, Anos)
+- Separator e seção "Mapeamento da Estrutura" (bindings prefixados com `Mapeamento.`):
+  - Botão "Atualizar estrutura" (desabilita durante mapeamento)
+  - Progress bar indeterminate durante operação
+  - Card de contagem (Colaboradores azul)
+  - ListView de colaboradores (Pasta, Nome Normalizado, Anos)
 
 #### 6.6.4 `ProcessamentoView.xaml`
 

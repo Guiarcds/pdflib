@@ -251,9 +251,11 @@ Solução: Normaliza tudo para comparar:
 
 ## 🖥️ As Telas do Sistema (Menu Lateral)
 
-### 📊 **Dashboard**
-- Visão geral: quantos processados, em revisão, erros
-- Atalhos rápidos
+### 📊 **Visão Geral**
+- Dashboard: quantos processados, em revisão, erros
+- Informações do sistema e regra principal
+- Mapeamento da estrutura: colaboradores encontrados, anos e meses
+- Botão "Atualizar estrutura" se você criou pasta manualmente
 
 ### ⚙️ **Processamento**
 - Lista PDFs na pasta ENTRADA
@@ -267,11 +269,6 @@ Solução: Normaliza tudo para comparar:
 - Preencha: Colaborador, Sigla, Mês/Ano, (opcional: Data, OS)
 - Botão **"Processar"** → move para lugar certo automaticamente
 - Cria colaborador novo se não existir!
-
-### 👥 **Mapeamento**
-- Mostra todos colaboradores encontrados nas pastas
-- Quantos anos/meses cada um tem
-- Botão "Atualizar" se você criou pasta manualmente
 
 ### ⚙️ **Configurações**
 - Onde você define pastas, API Key, modelo IA
