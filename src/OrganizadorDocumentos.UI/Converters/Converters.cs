@@ -72,3 +72,35 @@ public class CountToVisibilityConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+public class PercentToScaleConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is double percent)
+            return percent / 100.0;
+        return 1.0;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is double scale)
+            return scale * 100.0;
+        return 0.0;
+    }
+}
+
+public class ImageToVisibilityConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is System.Windows.Media.ImageSource)
+            return System.Windows.Visibility.Visible;
+        return System.Windows.Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

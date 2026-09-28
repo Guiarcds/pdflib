@@ -48,6 +48,48 @@
                 </StackPanel>
             </Border>
 
+            <!-- Visualizador do documento (somente zoom) -->
+            <Border Style="{StaticResource CardStyle}" Visibility="{Binding TemArquivoSelecionado, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Margin="0,20,0,0">
+                    <TextBlock Text="Visualização do Documento" FontSize="16" FontWeight="Bold"
+                               Foreground="#2C3E50" Margin="0,0,0,10"/>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
+                        <Button Content="−" Command="{Binding ZoomOutCommand}"
+                                Style="{StaticResource ZoomButtonStyle}"/>
+                        <Slider Minimum="25" Maximum="400" TickFrequency="25" IsSnapToTickEnabled="True"
+                                Value="{Binding Zoom}" Width="220" Margin="8,0"
+                                VerticalAlignment="Center"/>
+                        <Button Content="+" Command="{Binding ZoomInCommand}"
+                                Style="{StaticResource ZoomButtonStyle}"/>
+                        <TextBlock Text="{Binding Zoom, StringFormat='{}{0}%'}" VerticalAlignment="Center"
+                                   Width="60" TextAlignment="Center" Margin="10,0,0,0"
+                                   Style="{StaticResource ValueTextStyle}"/>
+                        <Button Content="100%" Command="{Binding ZoomResetCommand}"
+                                Style="{StaticResource ZoomButtonStyle}" Width="60" Margin="10,0,0,0"/>
+                    </StackPanel>
+
+                    <ProgressBar IsIndeterminate="{Binding CarregandoPreview}" Height="5" Margin="0,0,0,10"
+                                 Visibility="{Binding CarregandoPreview, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                    <Border Background="#F7F8F8" BorderBrush="#D5D8DC" BorderThickness="1"
+                            CornerRadius="4" Height="450">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                            <Image Source="{Binding PreviewDocumento}" Stretch="None" HorizontalAlignment="Center"
+                                   Visibility="{Binding PreviewDocumento, Converter={StaticResource ImageToVisibilityConverter}}">
+                                <Image.LayoutTransform>
+                                    <ScaleTransform ScaleX="{Binding Zoom, Converter={StaticResource PercentToScaleConverter}}"
+                                                   ScaleY="{Binding Zoom, Converter={StaticResource PercentToScaleConverter}}"/>
+                                </Image.LayoutTransform>
+                            </Image>
+                        </ScrollViewer>
+                    </Border>
+
+                    <TextBlock Text="{Binding PreviewStatus}" Margin="0,10,0,0"
+                               Foreground="#7F8C8D" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
             <!-- Formulário de Revisão Manual -->
             <Border Style="{StaticResource CardStyle}" Visibility="{Binding TemArquivoSelecionado, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel Margin="0,20,0,0">

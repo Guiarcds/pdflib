@@ -389,6 +389,7 @@ Interface de operações de arquivo.
 - `CriarPasta(string caminho)` → void
 - `ListarPdfs(string pasta)` → List<string>
 - `NomeArquivoUnico(string caminhoDestino, string nomeBase, string extensao)` → string
+- `RenderizarPaginaPdfAsync(string caminhoPdf, int pagina = 0, int densidade = 200)` → `Task<byte[]?>` — Rasteriza uma página do PDF em PNG (Magick.NET + Ghostscript) para o visualizador da tela de revisão
 
 #### 5.5.6 `IConfiguracaoService.cs`
 
@@ -692,6 +693,9 @@ VM da tela de revisão. Para documentos que a IA não entendeu.
   - AbrirPastaRevisarCommand → Abre explorer.exe na pasta REVISAR
   - ProcessarManualCommand → Valida campos, busca/cria colaborador, ano/mês, move arquivo
   - LimparFormularioCommand → Reseta campos
+- Visualizador (somente zoom): PreviewDocumento (ImageSource), Zoom (25-400%), CarregandoPreview, PreviewStatus
+- Comandos: ZoomInCommand, ZoomOutCommand, ZoomResetCommand (passos de 25%)
+- CarregarPreviewAsync → Rasteriza a 1ª página do PDF selecionado via IFileService.RenderizarPaginaPdfAsync (bitmap congelado para uso em thread de UI); _previewSequencia evita corrida ao trocar de arquivo rápido
 - PodeProcessar() → Valida que todos os campos obrigatórios estão preenchidos e sigla é válida
 - GerarNomeArquivo → Gera nome no padrão {Sigla}_{Colaborador}_{MM-AAAA}.pdf ou OS_{Colaborador}_OS-{Numero}.pdf
 
@@ -743,6 +747,11 @@ Tela de revisão manual com:
 - Botões "Atualizar Lista" e "Abrir Pasta REVISAR"
 - Card mostrando caminho da pasta REVISAR
 - ListView de PDFs com SelectedItem binding
+- Visualizador do documento (somente zoom), exibido quando há arquivo selecionado:
+  - Botões "-", "+", "100%" e slider de zoom (25% a 400%, passos de 25) — única interação permitida
+  - Preview da primeira página renderizada em PNG (IFileService.RenderizarPaginaPdfAsync)
+  - Image com LayoutTransform/ScaleTransform ligado ao Zoom via PercentToScaleConverter
+  - Progress bar durante a renderização e mensagem de erro quando o PDF não pode ser exibido
 - Formulário (visível apenas se arquivo selecionado):
   - TextBox Colaborador
   - ComboBox Sigla (10 siglas fixas: VT, VA, AC, BO, CO, SP, DE, SE, SB, OS)
@@ -766,11 +775,13 @@ Tela de configurações com 3 seções:
 
 #### 6.7.1 `Converters.cs`
 
-4 ValueConverters para bindings WPF:
+6 ValueConverters para bindings WPF:
 - InverseBooleanConverter — Inverte valor booleano (true→false, false→true)
 - BooleanToVisibilityConverter — Converte bool → Visibility (Visible/Collapsed). Com parâmetro "Inverse" inverte.
 - FileNameConverter — Extrai apenas o nome de arquivo de um caminho completo (Path.GetFileName)
+- PercentToScaleConverter — Converte porcentagem de zoom (ex.: 200) em fator de escala (2.0)
 - CountToVisibilityConverter — Mostra Visible se count > 0, Collapsed caso contrário
+- ImageToVisibilityConverter — Mostra Visible apenas se o valor for uma ImageSource não nula
 
 ---
 

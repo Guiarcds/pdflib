@@ -265,7 +265,7 @@ Solução: Normaliza tudo para comparar:
 
 ### 👁️ **Revisão** ⭐ *NOVO*
 - Lista PDFs na pasta REVISAR
-- **Clique em um arquivo** → aparece formulário lateral
+- **Clique em um arquivo** → aparece formulário lateral e o visualizador do PDF (apenas zoom)
 - Preencha: Colaborador, Sigla, Mês/Ano, (opcional: Data, OS)
 - Botão **"Processar"** → move para lugar certo automaticamente
 - Cria colaborador novo se não existir!

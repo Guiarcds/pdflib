@@ -203,6 +203,28 @@ public class FileServiceTests
         Assert.True(Directory.Exists(Path.Combine(pastaTemp, "split")));
     }
 
+    [Fact]
+    public async Task RenderizarPaginaPdfAsync_PrimeiraPagina_RetornaPngNaoVazio()
+    {
+        var caminhoPdf = CriarPdfTeste(2);
+
+        var png = await _service.RenderizarPaginaPdfAsync(caminhoPdf);
+
+        Assert.NotNull(png);
+        Assert.NotEmpty(png!);
+        Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, png.Take(4).ToArray());
+    }
+
+    [Fact]
+    public async Task RenderizarPaginaPdfAsync_ArquivoInexistente_RetornaNulo()
+    {
+        var caminho = Path.Combine(_pastaTeste, "nao_existe.pdf");
+
+        var png = await _service.RenderizarPaginaPdfAsync(caminho);
+
+        Assert.Null(png);
+    }
+
     private string CriarPdfTeste(int numPages)
     {
         var path = Path.Combine(_pastaTeste, $"test_pdf_{Guid.NewGuid():N}.pdf");

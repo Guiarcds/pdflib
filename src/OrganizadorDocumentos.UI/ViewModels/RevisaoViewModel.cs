@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using OrganizadorDocumentos.Core.Models;
 using OrganizadorDocumentos.Core.Services.Interfaces;
 
@@ -100,10 +102,47 @@ public class RevisaoViewModel : ViewModelBase
 
     private readonly string[] _siglasValidas = new[] { "VT", "VA", "AC", "BO", "CO", "SP", "DE", "SE", "SB", "OS" };
 
+    private ImageSource? _previewDocumento;
+    public ImageSource? PreviewDocumento
+    {
+        get => _previewDocumento;
+        set => SetProperty(ref _previewDocumento, value);
+    }
+
+    private double _zoom = 100;
+    public double Zoom
+    {
+        get => _zoom;
+        set => SetProperty(ref _zoom, Math.Clamp(value, ZoomMinimo, ZoomMaximo));
+    }
+
+    private bool _carregandoPreview;
+    public bool CarregandoPreview
+    {
+        get => _carregandoPreview;
+        set => SetProperty(ref _carregandoPreview, value);
+    }
+
+    private string _previewStatus = string.Empty;
+    public string PreviewStatus
+    {
+        get => _previewStatus;
+        set => SetProperty(ref _previewStatus, value);
+    }
+
+    public const double ZoomMinimo = 25;
+    public const double ZoomMaximo = 400;
+    private const double ZoomPasso = 25;
+
+    private int _previewSequencia;
+
     public ICommand AtualizarListaCommand { get; }
     public ICommand AbrirPastaRevisarCommand { get; }
     public ICommand ProcessarManualCommand { get; }
     public ICommand LimparFormularioCommand { get; }
+    public ICommand ZoomInCommand { get; }
+    public ICommand ZoomOutCommand { get; }
+    public ICommand ZoomResetCommand { get; }
 
     public RevisaoViewModel(
         IFileService fileService,
@@ -122,6 +161,9 @@ public class RevisaoViewModel : ViewModelBase
         AbrirPastaRevisarCommand = new RelayCommand(_ => AbrirPastaRevisar());
         ProcessarManualCommand = new RelayCommand(_ => ProcessarManual(), _ => PodeProcessar());
         LimparFormularioCommand = new RelayCommand(_ => LimparFormulario());
+        ZoomInCommand = new RelayCommand(_ => Zoom = Math.Min(Zoom + ZoomPasso, ZoomMaximo));
+        ZoomOutCommand = new RelayCommand(_ => Zoom = Math.Max(Zoom - ZoomPasso, ZoomMinimo));
+        ZoomResetCommand = new RelayCommand(_ => Zoom = 100);
 
         CarregarPastaRevisar();
     }
@@ -158,9 +200,12 @@ public class RevisaoViewModel : ViewModelBase
     private void CarregarDadosArquivo(string? caminhoArquivo)
     {
         TemArquivoSelecionado = !string.IsNullOrEmpty(caminhoArquivo) && File.Exists(caminhoArquivo);
-        
+
         if (!TemArquivoSelecionado)
         {
+            PreviewDocumento = null;
+            PreviewStatus = string.Empty;
+            CarregandoPreview = false;
             LimparFormulario();
             return;
         }
@@ -170,6 +215,57 @@ public class RevisaoViewModel : ViewModelBase
         CompetenciaAno = DateTime.Now.Year;
 
         StatusMensagem = "Preencha os campos abaixo e clique em Processar";
+
+        _ = CarregarPreviewAsync(caminhoArquivo!);
+    }
+
+    private async Task CarregarPreviewAsync(string caminhoPdf)
+    {
+        int sequencia = ++_previewSequencia;
+
+        CarregandoPreview = true;
+        PreviewStatus = "Carregando documento...";
+
+        try
+        {
+            var dados = await _fileService.RenderizarPaginaPdfAsync(caminhoPdf);
+
+            if (sequencia != _previewSequencia)
+                return;
+
+            if (dados is null || dados.Length == 0)
+            {
+                PreviewDocumento = null;
+                PreviewStatus = "Não foi possível visualizar este documento";
+                return;
+            }
+
+            var imagem = new BitmapImage();
+            using (var stream = new MemoryStream(dados))
+            {
+                imagem.BeginInit();
+                imagem.CacheOption = BitmapCacheOption.OnLoad;
+                imagem.StreamSource = stream;
+                imagem.EndInit();
+            }
+            imagem.Freeze();
+
+            PreviewDocumento = imagem;
+            PreviewStatus = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            _logService.Erro($"Erro ao carregar visualização do PDF: {caminhoPdf}", ex);
+            PreviewDocumento = null;
+            PreviewStatus = "Erro ao carregar o documento";
+        }
+        finally
+        {
+            if (sequencia == _previewSequencia)
+            {
+                CarregandoPreview = false;
+            }
+        }
     }
 
     private bool PodeProcessar()
@@ -266,6 +362,7 @@ public class RevisaoViewModel : ViewModelBase
         NumeroOS = string.Empty;
         StatusMensagem = string.Empty;
         TemArquivoSelecionado = false;
+        PreviewDocumento = null;
     }
 
     private string GerarNomeArquivo(string sigla, string colaborador, int mes, int ano, string numeroOS)

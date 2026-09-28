@@ -404,4 +404,41 @@ public class FileService : IFileService
         _log.Informacao($"Split concluído: {pdfsGerados.Count} PDF(s) individual(is) gerado(s)");
         return pdfsGerados;
     }
+
+    public async Task<byte[]?> RenderizarPaginaPdfAsync(string caminhoPdf, int pagina = 0, int densidade = 200)
+    {
+        if (!File.Exists(caminhoPdf))
+        {
+            _log.Aviso($"PDF não encontrado para visualização: {caminhoPdf}");
+            return null;
+        }
+
+        return await Task.Run(() =>
+        {
+            try
+            {
+                var settings = new MagickReadSettings
+                {
+                    Density = new Density(densidade, densidade),
+                    Width = 1600
+                };
+
+                using var images = new MagickImageCollection(caminhoPdf, settings);
+
+                if (images.Count == 0)
+                    return null;
+
+                var indice = Math.Clamp(pagina, 0, images.Count - 1);
+                var image = images[indice];
+                image.AutoOrient();
+
+                return image.ToByteArray(MagickFormat.Png);
+            }
+            catch (Exception ex)
+            {
+                _log.Erro($"Erro ao renderizar página do PDF: {caminhoPdf}", ex);
+                return null;
+            }
+        });
+    }
 }

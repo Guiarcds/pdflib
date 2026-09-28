@@ -17,4 +17,6 @@ public interface IFileService
 
     Task<List<string>> AplicarCorrecoesAsync(string caminhoPdf, List<PageDecision> decisoes, string pastaTemp);
     Task<List<string>> SplitUmaPaginaPorPdfAsync(List<string> imagensCorrigidas, string pastaTemp);
+
+    Task<byte[]?> RenderizarPaginaPdfAsync(string caminhoPdf, int pagina = 0, int densidade = 200);
 }
