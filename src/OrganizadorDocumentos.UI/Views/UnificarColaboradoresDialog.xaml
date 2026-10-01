@@ -1,0 +1,43 @@
+<Window x:Class="OrganizadorDocumentos.UI.Views.UnificarColaboradoresDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Unificar colaboradores"
+        Width="520"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+
+    <StackPanel Margin="20">
+        <TextBlock Text="Unificar pastas de colaboradores"
+                   FontSize="20" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,5"/>
+        <TextBlock Text="Todo o conteúdo da pasta de origem será movido para a pasta de destino, preservando a estrutura de anos e meses. A pasta de origem será excluída."
+                   TextWrapping="Wrap" Foreground="#7F8C8D" Margin="0,0,0,15"/>
+
+        <TextBlock Text="Colaborador de origem (será removido)" Style="{StaticResource LabelTextStyle}"/>
+        <ComboBox x:Name="OrigemCombo"
+                  ItemsSource="{Binding}"
+                  DisplayMemberPath="NomePasta"
+                  SelectionChanged="OrigemCombo_SelectionChanged"
+                  Height="28" Margin="0,0,0,12"/>
+
+        <TextBlock Text="Colaborador de destino (receberá os arquivos)" Style="{StaticResource LabelTextStyle}"/>
+        <ComboBox x:Name="DestinoCombo"
+                  ItemsSource="{Binding}"
+                  DisplayMemberPath="NomePasta"
+                  SelectionChanged="DestinoCombo_SelectionChanged"
+                  Height="28" Margin="0,0,0,12"/>
+
+        <Border Background="#FEF9E7" CornerRadius="4" Padding="12" Margin="0,0,0,18">
+            <TextBlock x:Name="ResumoTextBlock" TextWrapping="Wrap" Foreground="#7E5109"/>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancelar" Width="100" Height="32" Margin="0,0,10,0"
+                    Click="Cancelar_Click" IsCancel="True"/>
+            <Button Content="Unificar" Width="120" Height="32"
+                    Style="{StaticResource WarningButtonStyle}"
+                    Click="Confirmar_Click" IsDefault="True"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

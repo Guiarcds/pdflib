@@ -12,6 +12,7 @@ public interface IFileService
     void CriarPasta(string caminho);
     List<string> ListarPdfs(string pasta);
     string NomeArquivoUnico(string caminhoDestino, string nomeBase, string extensao);
+    ResultadoMoverPasta MoverPastaCompleta(string origem, string destino);
 
     Task<List<string>> DividirPdfAsync(string caminhoPdf, List<DocumentoFinanceiro> documentos, string pastaSaida);
 
@@ -19,4 +20,15 @@ public interface IFileService
     Task<List<string>> SplitUmaPaginaPorPdfAsync(List<string> imagensCorrigidas, string pastaTemp);
 
     Task<byte[]?> RenderizarPaginaPdfAsync(string caminhoPdf, int pagina = 0, int densidade = 200);
+}
+
+public class ResultadoMoverPasta
+{
+    public int ArquivosMovidos { get; set; }
+    public int ConflitosRenomeados { get; set; }
+    public int PastasMesCriadas { get; set; }
+    public int PastasMesReutilizadas { get; set; }
+    public List<string> Erros { get; } = new();
+
+    public bool Sucesso => Erros.Count == 0;
 }

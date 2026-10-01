@@ -183,6 +183,150 @@ public class FileService : IFileService
         return caminho;
     }
 
+    public ResultadoMoverPasta MoverPastaCompleta(string origem, string destino)
+    {
+        if (string.IsNullOrWhiteSpace(origem) || string.IsNullOrWhiteSpace(destino))
+            throw new ArgumentException("Origem e destino são obrigatórios.");
+
+        origem = Path.GetFullPath(origem);
+        destino = Path.GetFullPath(destino);
+
+        if (string.Equals(origem, destino, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("A pasta de origem e de destino não podem ser a mesma.");
+
+        if (!Directory.Exists(origem))
+            throw new DirectoryNotFoundException($"Pasta de origem não encontrada: {origem}");
+
+        Directory.CreateDirectory(destino);
+
+        var resultado = new ResultadoMoverPasta();
+
+        foreach (var dirAno in Directory.GetDirectories(origem))
+        {
+            var ano = ExtrairAno(Path.GetFileName(dirAno));
+            var dirAnoDestino = ano > 0
+                ? BuscarPastaAno(ano, destino)
+                : CriarPastaCorrespondente(destino, dirAno);
+
+            foreach (var dirMes in Directory.GetDirectories(dirAno))
+            {
+                var mes = ExtrairMes(Path.GetFileName(dirMes));
+                var jaExistia = mes > 0 && PastaMesExiste(dirAnoDestino, mes);
+
+                var dirMesDestino = mes > 0
+                    ? BuscarPastaMes(mes, ano, dirAnoDestino)
+                    : CriarPastaCorrespondente(dirAnoDestino, dirMes);
+
+                if (jaExistia)
+                    resultado.PastasMesReutilizadas++;
+                else
+                    resultado.PastasMesCriadas++;
+
+                MoverArquivosDaPasta(dirMes, dirMesDestino, resultado);
+            }
+        }
+
+        if (resultado.Sucesso)
+        {
+            Directory.Delete(origem, true);
+            _log.Informacao($"Pasta de origem removida após unificação: {origem}");
+        }
+        else
+        {
+            _log.Erro($"Unificação interrompida com {resultado.Erros.Count} erro(s). " +
+                      $"A pasta de origem foi preservada: {origem}");
+        }
+
+        _log.Informacao($"Unificação concluída: {resultado.ArquivosMovidos} arquivo(s) movido(s), " +
+                        $"{resultado.ConflitosRenomeados} renomeado(s) por conflito, " +
+                        $"{resultado.PastasMesCriadas} pasta(s) de mês criada(s)");
+
+        return resultado;
+    }
+
+    private string CriarPastaCorrespondente(string pastaPai, string pastaOrigem)
+    {
+        var caminho = Path.Combine(pastaPai, Path.GetFileName(pastaOrigem));
+        Directory.CreateDirectory(caminho);
+        _log.Informacao($"Pasta criada durante unificação: {caminho}");
+        return caminho;
+    }
+
+    private bool PastaMesExiste(string caminhoAno, int mes)
+    {
+        var nomeMes = _normalizacao.NormalizarNome(_normalizacao.NomeMesPorExtenso(mes));
+
+        return Directory.GetDirectories(caminhoAno).Any(dir =>
+        {
+            var nome = Path.GetFileName(dir);
+            return Regex.IsMatch(nome, $"^{mes:D2}($|[^0-9])") ||
+                   Regex.IsMatch(nome, $"^{mes}($|[^0-9])") ||
+                   (!string.IsNullOrEmpty(nomeMes) && _normalizacao.NormalizarNome(nome).Contains(nomeMes));
+        });
+    }
+
+    private void MoverArquivosDaPasta(string pastaOrigem, string pastaDestino, ResultadoMoverPasta resultado)
+    {
+        var arquivos = Directory.GetFiles(pastaOrigem, "*", SearchOption.AllDirectories)
+            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        foreach (var arquivo in arquivos)
+        {
+            try
+            {
+                var relativo = Path.GetRelativePath(pastaOrigem, arquivo);
+                var pastaDestinoFinal = Path.GetDirectoryName(Path.Combine(pastaDestino, relativo))!;
+                Directory.CreateDirectory(pastaDestinoFinal);
+
+                var nomeBase = Path.GetFileNameWithoutExtension(arquivo);
+                var extensao = Path.GetExtension(arquivo);
+                var destino = NomeArquivoUnico(pastaDestinoFinal, nomeBase, extensao);
+                var renomeado = !string.Equals(
+                    Path.GetFileName(destino),
+                    Path.GetFileName(arquivo),
+                    StringComparison.OrdinalIgnoreCase);
+
+                File.Move(arquivo, destino);
+                resultado.ArquivosMovidos++;
+
+                if (renomeado)
+                {
+                    resultado.ConflitosRenomeados++;
+                    _log.Aviso($"Nome duplicado na unificação: '{Path.GetFileName(arquivo)}' -> '{Path.GetFileName(destino)}'");
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado.Erros.Add($"{arquivo}: {ex.Message}");
+                _log.Erro($"Erro ao mover arquivo durante unificação: {arquivo}", ex);
+            }
+        }
+    }
+
+    private static int ExtrairAno(string nomePasta)
+    {
+        var match = Regex.Match(nomePasta, @"^(\d{4})");
+        return match.Success && int.TryParse(match.Groups[1].Value, out var ano) ? ano : 0;
+    }
+
+    private int ExtrairMes(string nomePasta)
+    {
+        var match = Regex.Match(nomePasta, @"^(\d{1,2})");
+        if (match.Success && int.TryParse(match.Groups[1].Value, out var mes) && mes is >= 1 and <= 12)
+            return mes;
+
+        var nomeNormalizado = _normalizacao.NormalizarNome(nomePasta);
+        for (var i = 1; i <= 12; i++)
+        {
+            var nomeMes = _normalizacao.NormalizarNome(_normalizacao.NomeMesPorExtenso(i));
+            if (!string.IsNullOrEmpty(nomeMes) && nomeNormalizado.Contains(nomeMes))
+                return i;
+        }
+
+        return 0;
+    }
+
     public async Task<List<string>> DividirPdfAsync(string caminhoPdf, List<DocumentoFinanceiro> documentos, string pastaSaida)
     {
         var arquivosGerados = new List<string>();

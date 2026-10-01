@@ -62,14 +62,22 @@
                 </StackPanel>
             </Border>
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                 <Button Content="[ Atualizar estrutura ]"
                         Command="{Binding Mapeamento.AtualizarEstruturaCommand}"
                         Style="{StaticResource ActionButtonStyle}"
                         IsEnabled="{Binding Mapeamento.Mapeando, Converter={StaticResource InverseBooleanConverter}}"/>
+                <Button Content="[ Unificar ]"
+                        Command="{Binding Mapeamento.UnificarCommand}"
+                        Style="{StaticResource WarningButtonStyle}"
+                        IsEnabled="{Binding Mapeamento.PodeUnificar}"
+                        ToolTip="Move todo o conteúdo de um colaborador para outro e exclui a pasta de origem"/>
                 <TextBlock Text="{Binding Mapeamento.StatusMapeamento}" VerticalAlignment="Center" Margin="15,0,0,0"
                            Foreground="#7F8C8D"/>
             </StackPanel>
+
+            <TextBlock Text="{Binding Mapeamento.StatusUnificacao}" TextWrapping="Wrap"
+                       Foreground="#7F8C8D" Margin="10,0,10,20"/>
 
             <ProgressBar IsIndeterminate="{Binding Mapeamento.Mapeando}" Height="5" Margin="0,0,0,20"
                          Visibility="{Binding Mapeamento.Mapeando, Converter={StaticResource BooleanToVisibilityConverter}}"/>

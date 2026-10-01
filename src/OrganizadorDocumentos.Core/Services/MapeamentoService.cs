@@ -7,14 +7,16 @@ using OrganizadorDocumentos.Core.Services.Interfaces;
 public class MapeamentoService : IMapeamentoService
 {
     private readonly INormalizacaoService _normalizacao;
+    private readonly IFileService _fileService;
     private readonly ILogService _log;
     private EstruturaPasta _estrutura = new();
 
     public event EventHandler<MapeamentoEventArgs>? MapeamentoAtualizado;
 
-    public MapeamentoService(INormalizacaoService normalizacao, ILogService log)
+    public MapeamentoService(INormalizacaoService normalizacao, IFileService fileService, ILogService log)
     {
         _normalizacao = normalizacao;
+        _fileService = fileService;
         _log = log;
     }
 
@@ -99,13 +101,16 @@ public class MapeamentoService : IMapeamentoService
 
     public void AtualizarMapeamento()
     {
-        if (!string.IsNullOrEmpty(_estrutura.Colaboradores.FirstOrDefault()?.CaminhoCompleto))
-        {
-            var pastaRaiz = Path.GetDirectoryName(Path.GetDirectoryName(
-                _estrutura.Colaboradores.First().CaminhoCompleto));
-            if (pastaRaiz != null)
-                MapearEstrutura(pastaRaiz);
-        }
+        var caminho = _estrutura.Colaboradores
+            .Select(c => c.CaminhoCompleto)
+            .FirstOrDefault(c => !string.IsNullOrEmpty(c) && Directory.Exists(c));
+
+        if (caminho == null)
+            return;
+
+        var pastaRaiz = Path.GetDirectoryName(Path.GetDirectoryName(caminho));
+        if (pastaRaiz != null)
+            MapearEstrutura(pastaRaiz);
     }
 
     public EstruturaPasta ObterMapeamento()
@@ -126,6 +131,98 @@ public class MapeamentoService : IMapeamentoService
         }
 
         return resultados;
+    }
+
+    public UnificarResultado UnificarColaboradores(string nomeOrigem, string nomeDestino)
+    {
+        var resultado = new UnificarResultado
+        {
+            NomeOrigem = nomeOrigem ?? string.Empty,
+            NomeDestino = nomeDestino ?? string.Empty
+        };
+
+        if (string.IsNullOrWhiteSpace(nomeOrigem) || string.IsNullOrWhiteSpace(nomeDestino))
+        {
+            resultado.Mensagem = "Informe o colaborador de origem e o de destino.";
+            return resultado;
+        }
+
+        if (string.Equals(nomeOrigem.Trim(), nomeDestino.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            resultado.Mensagem = "O colaborador de origem e o de destino não podem ser o mesmo.";
+            return resultado;
+        }
+
+        var origem = BuscarColaboradorPorNome(nomeOrigem);
+        var destino = BuscarColaboradorPorNome(nomeDestino);
+
+        if (origem == null)
+        {
+            resultado.Mensagem = $"Colaborador de origem não encontrado no mapeamento: {nomeOrigem}";
+            return resultado;
+        }
+
+        if (destino == null)
+        {
+            resultado.Mensagem = $"Colaborador de destino não encontrado no mapeamento: {nomeDestino}";
+            return resultado;
+        }
+
+        if (!Directory.Exists(origem.CaminhoCompleto))
+        {
+            resultado.Mensagem = $"Pasta do colaborador de origem não encontrada: {origem.CaminhoCompleto}";
+            return resultado;
+        }
+
+        if (string.Equals(origem.CaminhoCompleto, destino.CaminhoCompleto, StringComparison.OrdinalIgnoreCase))
+        {
+            resultado.Mensagem = "Os dois colaboradores apontam para a mesma pasta.";
+            return resultado;
+        }
+
+        try
+        {
+            _log.Informacao($"Unificando colaborador '{origem.NomePasta}' em '{destino.NomePasta}'");
+
+            var movido = _fileService.MoverPastaCompleta(origem.CaminhoCompleto, destino.CaminhoCompleto);
+
+            resultado.ArquivosMovidos = movido.ArquivosMovidos;
+            resultado.ConflitosRenomeados = movido.ConflitosRenomeados;
+            resultado.PastasMesCriadas = movido.PastasMesCriadas;
+            resultado.PastasMesReutilizadas = movido.PastasMesReutilizadas;
+            resultado.Erros.AddRange(movido.Erros);
+
+            if (!movido.Sucesso)
+            {
+                resultado.Mensagem = $"Unificação concluída parcialmente: {movido.Erros.Count} erro(s). " +
+                                     $"A pasta '{origem.NomePasta}' foi preservada.";
+                _log.Erro(resultado.Mensagem);
+                return resultado;
+            }
+
+            AtualizarMapeamento();
+
+            resultado.Sucesso = true;
+            resultado.Mensagem = $"'{origem.NomePasta}' unificado em '{destino.NomePasta}': " +
+                                 $"{movido.ArquivosMovidos} arquivo(s) movido(s), " +
+                                 $"{movido.ConflitosRenomeados} renomeado(s) por conflito, " +
+                                 $"{movido.PastasMesCriadas} pasta(s) de mês criada(s).";
+
+            _log.Informacao(resultado.Mensagem);
+        }
+        catch (Exception ex)
+        {
+            resultado.Mensagem = $"Erro ao unificar colaboradores: {ex.Message}";
+            _log.Erro($"Erro ao unificar '{nomeOrigem}' em '{nomeDestino}'", ex);
+        }
+
+        return resultado;
+    }
+
+    private Colaborador? BuscarColaboradorPorNome(string nomePasta)
+    {
+        return _estrutura.Colaboradores.FirstOrDefault(c =>
+            string.Equals(c.NomePasta, nomePasta.Trim(), StringComparison.OrdinalIgnoreCase));
     }
 
     private int ExtrairNumeroMes(string nomePasta)
