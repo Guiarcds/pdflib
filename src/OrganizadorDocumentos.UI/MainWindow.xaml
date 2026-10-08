@@ -8,41 +8,140 @@
         mc:Ignorable="d"
         Title="{Binding Titulo}" Height="700" Width="1100"
         WindowStartupLocation="CenterScreen"
-        Background="#F0F0F0">
+        WindowStyle="None"
+        Background="Transparent"
+        Foreground="{StaticResource TextPrimary}"
+        AllowsTransparency="True">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40"
+                      ResizeBorderThickness="6"
+                      GlassFrameThickness="-1"
+                      UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
 
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="28"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="#2C3E50">
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                Background="#802C2C2C"
+                WindowChrome.IsHitTestVisibleInChrome="True"
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+<Grid Background="#EB0B132B">
+                <TextBlock Text="{Binding Titulo}"
+                           Foreground="{StaticResource TextPrimary}"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Margin="15,0,0,0" />
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0,0,10,0"
+                            WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button x:Name="MinimizeButton"
+                            Content="&#xE921;"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="12"
+                            Width="40" Height="30"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{StaticResource TextPrimary}"
+                            Cursor="Hand"
+                            WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="MinimizeButton_Click" />
+                    <Button x:Name="MaximizeButton"
+                            Content="&#xE922;"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="12"
+                            Width="40" Height="30"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{StaticResource TextPrimary}"
+                            Cursor="Hand"
+                            WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="MaximizeButton_Click" />
+                    <Button x:Name="CloseButton"
+                            Content="&#xE8BB;"
+                            FontFamily="Segoe MDL2 Assets"
+                            FontSize="12"
+                            Width="40" Height="30"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="{StaticResource TextPrimary}"
+                            Cursor="Hand"
+                            WindowChrome.IsHitTestVisibleInChrome="True"
+                            Click="CloseButton_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Border"
+                                        Background="{TemplateBinding Background}"
+                                        Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Border" Property="Background" Value="#FF5C5C" />
+                                        <Setter Property="Foreground" Value="White" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1" Grid.Column="0"
+                Background="#400B132B"
+                BorderBrush="{StaticResource GlassBorder}"
+                BorderThickness="0,0,1,0">
             <DockPanel>
-                <Border DockPanel.Dock="Top" Background="#1A252F" Padding="15,20">
+                <Border DockPanel.Dock="Top" Padding="15,20">
                     <TextBlock Text="Organizador de Documentos"
                                Foreground="White" FontSize="14" FontWeight="Bold"
                                TextWrapping="Wrap" TextAlignment="Center"/>
                 </Border>
 
-                <StackPanel DockPanel.Dock="Bottom" Margin="0,0,0,10">
-                    <TextBlock Text="{Binding StatusSistema, StringFormat='Status: {0}'}"
-                               Foreground="#BDC3C7" FontSize="11" Margin="15,0,0,5"
-                               HorizontalAlignment="Left"/>
-                </StackPanel>
-
                 <StackPanel Margin="0,20,0,0">
-                    <Button Content="Visão Geral" Command="{Binding NavegarVisaoGeralCommand}"
-                            Style="{StaticResource MenuButtonStyle}" Margin="0,2"/>
-                    <Button Content="Processamento" Command="{Binding NavegarProcessamentoCommand}"
-                            Style="{StaticResource MenuButtonStyle}" Margin="0,2"/>
-                    <Button Content="Revisão" Command="{Binding NavegarRevisaoCommand}"
-                            Style="{StaticResource MenuButtonStyle}" Margin="0,2"/>
-                    <Button Content="Configurações" Command="{Binding NavegarConfiguracaoCommand}"
-                            Style="{StaticResource MenuButtonStyle}" Margin="0,2"/>
+                    <RadioButton Content="Visão Geral"
+                                 Command="{Binding NavegarVisaoGeralCommand}"
+                                 IsChecked="{Binding PaginaAtual, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Visão Geral'}"
+                                 Style="{StaticResource MenuRadioButtonStyle}" Margin="0,2"/>
+                    <RadioButton Content="Processamento"
+                                 Command="{Binding NavegarProcessamentoCommand}"
+                                 IsChecked="{Binding PaginaAtual, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Processamento'}"
+                                 Style="{StaticResource MenuRadioButtonStyle}" Margin="0,2"/>
+                    <RadioButton Content="Revisão"
+                                 Command="{Binding NavegarRevisaoCommand}"
+                                 IsChecked="{Binding PaginaAtual, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Revisão'}"
+                                 Style="{StaticResource MenuRadioButtonStyle}" Margin="0,2"/>
+                    <RadioButton Content="Configurações"
+                                 Command="{Binding NavegarConfiguracaoCommand}"
+                                 IsChecked="{Binding PaginaAtual, Converter={StaticResource StringEqualsConverter}, ConverterParameter='Configurações'}"
+                                 Style="{StaticResource MenuRadioButtonStyle}" Margin="0,2"/>
                 </StackPanel>
             </DockPanel>
         </Border>
 
-        <ContentControl x:Name="ContentArea" Grid.Column="1"/>
+        <ContentControl x:Name="ContentArea" Grid.Row="1" Grid.Column="1"/>
+
+        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                Background="#802C2C2C"
+                BorderBrush="{StaticResource GlassBorder}"
+                BorderThickness="0,1,0,0">
+            <TextBlock Text="{Binding StatusSistema, StringFormat='Status: {0}'}"
+                       Foreground="{StaticResource TextMuted}"
+                       FontSize="11"
+                       VerticalAlignment="Center"
+                       Margin="15,0,0,0"/>
+        </Border>
     </Grid>
 </Window>

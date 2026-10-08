@@ -20,7 +20,7 @@
                     <StackPanel>
                         <TextBlock Text="Documentos Processados" Style="{StaticResource LabelTextStyle}"/>
                         <TextBlock Text="{Binding TotalProcessados}" FontSize="36" FontWeight="Bold"
-                                   Foreground="#27AE60"/>
+                                   Foreground="{StaticResource Success}"/>
                     </StackPanel>
                 </Border>
 
@@ -28,7 +28,7 @@
                     <StackPanel>
                         <TextBlock Text="Em Revisão" Style="{StaticResource LabelTextStyle}"/>
                         <TextBlock Text="{Binding TotalRevisar}" FontSize="36" FontWeight="Bold"
-                                   Foreground="#F39C12"/>
+                                   Foreground="{StaticResource Warning}"/>
                     </StackPanel>
                 </Border>
 
@@ -36,7 +36,7 @@
                     <StackPanel>
                         <TextBlock Text="Erros" Style="{StaticResource LabelTextStyle}"/>
                         <TextBlock Text="{Binding TotalErros}" FontSize="36" FontWeight="Bold"
-                                   Foreground="#E74C3C"/>
+                                   Foreground="{StaticResource Danger}"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -44,13 +44,13 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Informações do Sistema" FontSize="16" FontWeight="Bold"
-                               Foreground="#2C3E50" Margin="0,0,0,10"/>
+                               Foreground="{StaticResource TextPrimary}" Margin="0,0,0,10"/>
                     <TextBlock Text="{Binding UltimaAtualizacao, StringFormat='Última atualização: {0}'}"
                                Style="{StaticResource ValueTextStyle}"/>
                 </StackPanel>
             </Border>
 
-            <Separator Background="#D5D8DC" Margin="10,15"/>
+            <Separator Background="{StaticResource GlassBorder}" Margin="10,15"/>
 
             <TextBlock Text="Mapeamento da Estrutura" Style="{StaticResource HeaderTextStyle}"/>
 
@@ -58,26 +58,26 @@
                 <StackPanel>
                     <TextBlock Text="Colaboradores" Style="{StaticResource LabelTextStyle}"/>
                     <TextBlock Text="{Binding Mapeamento.TotalColaboradores}" FontSize="36" FontWeight="Bold"
-                               Foreground="#3498DB"/>
+                               Foreground="{StaticResource Accent}"/>
                 </StackPanel>
             </Border>
 
             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <Button Content="[ Atualizar estrutura ]"
+                <Button Content="Atualizar estrutura"
                         Command="{Binding Mapeamento.AtualizarEstruturaCommand}"
                         Style="{StaticResource ActionButtonStyle}"
                         IsEnabled="{Binding Mapeamento.Mapeando, Converter={StaticResource InverseBooleanConverter}}"/>
-                <Button Content="[ Unificar ]"
+                <Button Content="Unificar"
                         Command="{Binding Mapeamento.UnificarCommand}"
                         Style="{StaticResource WarningButtonStyle}"
                         IsEnabled="{Binding Mapeamento.PodeUnificar}"
                         ToolTip="Move todo o conteúdo de um colaborador para outro e exclui a pasta de origem"/>
                 <TextBlock Text="{Binding Mapeamento.StatusMapeamento}" VerticalAlignment="Center" Margin="15,0,0,0"
-                           Foreground="#7F8C8D"/>
+                           Foreground="{StaticResource TextMuted}"/>
             </StackPanel>
 
             <TextBlock Text="{Binding Mapeamento.StatusUnificacao}" TextWrapping="Wrap"
-                       Foreground="#7F8C8D" Margin="10,0,10,20"/>
+                       Foreground="{StaticResource TextMuted}" Margin="10,0,10,20"/>
 
             <ProgressBar IsIndeterminate="{Binding Mapeamento.Mapeando}" Height="5" Margin="0,0,0,20"
                          Visibility="{Binding Mapeamento.Mapeando, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -85,17 +85,16 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Colaboradores Mapeados" FontSize="16" FontWeight="Bold"
-                               Foreground="#2C3E50" Margin="0,0,0,10"/>
-                    <ListView ItemsSource="{Binding Mapeamento.Colaboradores}" MaxHeight="300"
-                              ScrollViewer.VerticalScrollBarVisibility="Auto">
-                        <ListView.View>
-                            <GridView>
-                                <GridViewColumn Header="Pasta" DisplayMemberBinding="{Binding NomePasta}" Width="200"/>
-                                <GridViewColumn Header="Nome Normalizado" DisplayMemberBinding="{Binding NomeNormalizado}" Width="200"/>
-                                <GridViewColumn Header="Anos" DisplayMemberBinding="{Binding Anos.Count}" Width="80"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                               Foreground="{StaticResource TextPrimary}" Margin="0,0,0,10"/>
+                    <DataGrid ItemsSource="{Binding Mapeamento.Colaboradores}" MaxHeight="300"
+                              AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Pasta" Binding="{Binding NomePasta}" Width="*"/>
+                            <DataGridTextColumn Header="Nome Normalizado" Binding="{Binding NomeNormalizado}" Width="*"/>
+                            <DataGridTextColumn Header="Anos" Binding="{Binding Anos.Count}" Width="80"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
                 </StackPanel>
             </Border>
         </StackPanel>

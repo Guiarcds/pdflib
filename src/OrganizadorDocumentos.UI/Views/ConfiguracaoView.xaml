@@ -13,7 +13,7 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Pastas do Sistema" FontSize="16" FontWeight="Bold"
-                               Foreground="#2C3E50" Margin="0,0,0,15"/>
+                               Foreground="{StaticResource SectionTitle}" Margin="0,0,0,15"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -52,7 +52,7 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Configurações da API (OpenRouter)" FontSize="16" FontWeight="Bold"
-                               Foreground="#2C3E50" Margin="0,0,0,15"/>
+                               Foreground="{StaticResource SectionTitle}" Margin="0,0,0,15"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -78,7 +78,7 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Comportamento" FontSize="16" FontWeight="Bold"
-                               Foreground="#2C3E50" Margin="0,0,0,15"/>
+                               Foreground="{StaticResource SectionTitle}" Margin="0,0,0,15"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -113,7 +113,7 @@
                 <Button Content="Salvar Configurações" Command="{Binding SalvarCommand}"
                         Style="{StaticResource SuccessButtonStyle}"/>
                 <TextBlock Text="{Binding StatusSalvamento}" VerticalAlignment="Center" Margin="15,0,0,0"
-                           Foreground="#27AE60"/>
+                           Foreground="{StaticResource Success}"/>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

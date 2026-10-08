@@ -24,6 +24,13 @@ public class MainViewModel : ViewModelBase
         set => SetProperty(ref _statusSistema, value);
     }
 
+    private string _paginaAtual = "Visão Geral";
+    public string PaginaAtual
+    {
+        get => _paginaAtual;
+        set => SetProperty(ref _paginaAtual, value);
+    }
+
     public ICommand NavegarVisaoGeralCommand { get; }
     public ICommand NavegarProcessamentoCommand { get; }
     public ICommand NavegarRevisaoCommand { get; }
@@ -65,6 +72,7 @@ public class MainViewModel : ViewModelBase
     private void NavegarPara(string titulo)
     {
         Titulo = $"Organizador de Documentos - {titulo}";
+        PaginaAtual = titulo;
         NavegacaoSolicitada?.Invoke(this, titulo);
     }
 }

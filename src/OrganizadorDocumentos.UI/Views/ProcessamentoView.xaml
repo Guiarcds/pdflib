@@ -65,8 +65,8 @@
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
                     <TextBlock Text="Arquivos na Pasta de Entrada" FontSize="16" FontWeight="Bold"
-                               Foreground="#2C3E50" Margin="0,0,0,10"/>
-                    <ListBox ItemsSource="{Binding ArquivosPendentes}" MaxHeight="150"
+                               Foreground="{StaticResource TextPrimary}" Margin="0,0,0,10"/>
+                    <ListBox ItemsSource="{Binding ArquivosPendentes}" MaxHeight="250"
                              ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -80,7 +80,7 @@
             <Border Style="{StaticResource CardStyle}" Visibility="{Binding Resultados.Count, Converter={StaticResource CountToVisibilityConverter}}">
                 <StackPanel>
                     <TextBlock Text="Resultados do Processamento" FontSize="16" FontWeight="Bold"
-                               Foreground="#2C3E50" Margin="0,0,0,10"/>
+                               Foreground="{StaticResource TextPrimary}" Margin="0,0,0,10"/>
                     <ListView ItemsSource="{Binding Resultados}" MaxHeight="200"
                               ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListView.View>

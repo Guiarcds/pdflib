@@ -1,5 +1,9 @@
+using System;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shell;
 using OrganizadorDocumentos.UI.ViewModels;
 using OrganizadorDocumentos.UI.Views;
 
@@ -13,6 +17,13 @@ public partial class MainWindow : Window
     private readonly RevisaoView _revisaoView;
     private readonly ConfiguracaoView _configuracaoView;
 
+    private const int DwmwaUseImmersiveDarkMode = 20;
+    private const int DwmwaSystembackdropType = 38;
+    private const int DwmsbtabMainWindow = 3;
+
+    [DllImport("dwmapi.dll", PreserveSig = true)]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
     public MainWindow(MainViewModel viewModel)
     {
         InitializeComponent();
@@ -25,6 +36,37 @@ public partial class MainWindow : Window
 
         _viewModel.NavegacaoSolicitada += OnNavegacaoSolicitada;
         _viewModel.NavegarVisaoGeralCommand.Execute(null);
+
+        SourceInitialized += OnSourceInitialized;
+    }
+
+    private void OnSourceInitialized(object? sender, EventArgs e)
+    {
+        SourceInitialized -= OnSourceInitialized;
+        TryEnableAcrylicBackdrop();
+    }
+
+    private void TryEnableAcrylicBackdrop()
+    {
+        try
+        {
+            var handle = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            if (handle == IntPtr.Zero)
+                throw new InvalidOperationException("Window handle not available");
+
+            int darkMode = 1;
+            int backdropType = DwmsbtabMainWindow;
+
+            int hr1 = DwmSetWindowAttribute(handle, DwmwaUseImmersiveDarkMode, ref darkMode, sizeof(int));
+            int hr2 = DwmSetWindowAttribute(handle, DwmwaSystembackdropType, ref backdropType, sizeof(int));
+
+            if (hr1 != 0 || hr2 != 0)
+                throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+        }
+        catch
+        {
+            Background = new SolidColorBrush(Color.FromRgb(0x0B, 0x13, 0x2B));
+        }
     }
 
     private void OnNavegacaoSolicitada(object? sender, string titulo)
@@ -37,5 +79,29 @@ public partial class MainWindow : Window
             "Configurações" => _configuracaoView,
             _ => _visaoGeralView
         };
+    }
+
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        SystemCommands.MinimizeWindow(this);
+    }
+
+    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (WindowState == WindowState.Maximized)
+            SystemCommands.RestoreWindow(this);
+        else
+            SystemCommands.MaximizeWindow(this);
+    }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        SystemCommands.CloseWindow(this);
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            DragMove();
     }
 }
