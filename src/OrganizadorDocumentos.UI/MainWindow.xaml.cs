@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
 using OrganizadorDocumentos.UI.ViewModels;
@@ -23,6 +24,17 @@ public partial class MainWindow : Window
 
     [DllImport("dwmapi.dll", PreserveSig = true)]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetCursorPos(out Win32Point lpPoint);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Win32Point
+    {
+        public int X;
+        public int Y;
+    }
 
     public MainWindow(MainViewModel viewModel)
     {
@@ -99,9 +111,31 @@ public partial class MainWindow : Window
         SystemCommands.CloseWindow(this);
     }
 
-    private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
-            DragMove();
-    }
+        private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
+            {
+                if (WindowState == WindowState.Maximized)
+                {
+                    // Get the current mouse position in screen coordinates
+                    GetCursorPos(out Win32Point mouseScreen);
+                    // Get the mouse position relative to the title bar grid
+                    Point offsetInTitleBar = e.GetPosition(TitleBarGrid);
+
+                    // Restore the window
+                    WindowState = WindowState.Normal;
+
+                    // Set the window's position so that the mouse pointer remains at the same relative point in the title bar
+                    Left = (double)mouseScreen.X - offsetInTitleBar.X;
+                    Top = (double)mouseScreen.Y - offsetInTitleBar.Y;
+
+                    // Now start the drag operation
+                    DragMove();
+                }
+                else
+                {
+                    DragMove();
+                }
+            }
+        }
 }

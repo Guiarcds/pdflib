@@ -30,11 +30,11 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
-                Background="#802C2C2C"
-                WindowChrome.IsHitTestVisibleInChrome="True"
-                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-<Grid Background="#EB0B132B">
+<Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+        Background="#802C2C2C"
+        WindowChrome.IsHitTestVisibleInChrome="True"
+        MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+    <Grid x:Name="TitleBarGrid" Background="#EB0B132B">
                 <TextBlock Text="{Binding Titulo}"
                            Foreground="{StaticResource TextPrimary}"
                            FontSize="14"
