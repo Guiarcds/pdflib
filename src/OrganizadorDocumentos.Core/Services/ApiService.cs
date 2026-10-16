@@ -42,6 +42,19 @@ BO=Bonificação, CO=Comissão, SP=Serviço Prestado, DE=Diária,
 SE=Salário Extra, SB=Salário Base, OS=Vale por OS
 
 ═══════════════════════════════════════════════════════════════
+CLASSIFICAÇÃO DO DOCUMENTO (APLICA-SE A DOCUMENTOS DIGITAIS E ESCANEADOS)
+═══════════════════════════════════════════════════════════════
+Este sistema NÃO recebe apenas recibos. O PDF pode conter qualquer documento financeiro
+ou trabalhista (demonstrativos, relatórios, comprovantes, holerites, listagens, planilhas
+impressas, ordens de serviço, etc.). Antes de extrair os dados, classifique cada documento:
+
+- Se for um RECIBO (título "RECIBO" ou estrutura com "Emitente"/"Referente") → aplique as
+  REGRAS ESPECIAIS PARA RECIBOS abaixo.
+- Se for QUALQUER OUTRO tipo de documento → aplique as REGRAS PARA OUTROS TIPOS DE
+  DOCUMENTO (seção mais abaixo).
+- As REGRAS PARA EXTRAÇÃO DE COMPETÊNCIA e de COLABORADOR valem para todos os casos.
+
+═══════════════════════════════════════════════════════════════
 REGRAS ESPECIAIS PARA RECIBOS MANUSCRITOS / DIGITALIZADOS
 ═══════════════════════════════════════════════════════════════
 
@@ -124,6 +137,70 @@ REGRAS PARA EXTRAÇÃO DE COLABORADOR (MUITO IMPORTANTE):
 - Nomes brasileiros podem ter: acentos (João, São, José), partículas (da, de, do, das, dos), sobrenomes compostos (Silva Santos, Costa Lima)
 - Exemplos válidos: "João da Silva", "Maria José dos Santos", "José Maria da Costa Lima"
 - Se houver múltiplos nomes, escolha o que aparece como **titular/beneficiário/favorecido/emitente (em recibos)** do documento
+
+═══════════════════════════════════════════════════════════════
+REGRAS PARA OUTROS TIPOS DE DOCUMENTO (NÃO-RECIBO)
+═══════════════════════════════════════════════════════════════
+
+A) TIPO / SIGLA — o tipo geralmente é dado pelo TÍTULO do documento:
+   1º) Leia o título/cabeçalho impresso ou escrito no topo (ex: "DEMONSTRATIVO DE COMISSÕES",
+       "RELATÓRIO DE DIÁRIAS", "COMPROVANTE DE VALE TRANSPORTE", "HOLERITE", "ORDEM DE SERVIÇO")
+       e mapeie para a sigla correspondente.
+   2º) Se o título for genérico ou inexistente (ex: "COMPROVANTE", "DEMONSTRATIVO", "RELATÓRIO",
+       sem título), DEDUZA o tipo pelo CONTEXTO do conteúdo — rubricas, descrição dos itens e
+       natureza do pagamento:
+       - Passagens, recarga de cartão de transporte, deslocamento casa-trabalho → VT
+       - Cartão/ticket alimentação ou refeição → VA
+       - Reembolso/ressarcimento de despesas, combustível, hospedagem a serviço → AC
+       - Prêmio, gratificação, bônus por meta → BO
+       - Percentual sobre vendas/serviços, produção → CO
+       - Prestação de serviço avulso, autônomo, RPA → SP
+       - Valor por dia trabalhado/viajado → DE
+       - Horas extras, adicionais, dia extra → SE
+       - Salário mensal, remuneração fixa, folha/holerite → SB
+       - Pagamento vinculado a número de ordem de serviço → OS
+   3º) Se título e conteúdo divergirem, PREVALECE O TÍTULO, mas reduza a confiança.
+   4º) Se o documento misturar tipos (ex: holerite com salário + comissão), use o tipo
+       principal indicado no título; se não houver, use o de maior valor.
+   5º) Se ainda restar dúvida entre dois ou mais tipos → sigla: null (vai para REVISAR).
+   Preencha "tipo_documento" com o título/descrição como aparece no documento.
+
+B) COLABORADOR — quando não houver rótulo explícito, entenda o CONTEXTO:
+   - Nome em destaque no cabeçalho (ex: "Relatório de Diárias — João da Silva")
+   - Nome junto à assinatura/ciência de quem RECEBE ("Assinatura do colaborador")
+   - Nome na linha/coluna do favorecido em tabelas de pagamento
+   - Nome em campos como "Para:", "A/C:", "Nome:", "Prestador:", "Profissional:", "Pago a:"
+   - O colaborador é sempre a PESSOA FÍSICA que recebe o valor, nunca a empresa pagadora.
+   - Quem assina como responsável pela empresa, contador ou testemunha NÃO é colaborador.
+   - Listagens com VÁRIOS colaboradores (ex: folha com 10 nomes): cada colaborador gera um
+     item próprio no array, com seu respectivo valor/tipo/competência.
+
+C) COMPETÊNCIA — é o período a que o pagamento SE REFERE, não a data de emissão/pagamento.
+   Ordem de busca em documentos não-recibo:
+   1º) Rótulos explícitos: "Competência", "Período", "Mês de referência", "Referência", "Ref.",
+       "Período de apuração", "Mês/Ano".
+   2º) Intervalos de datas (ex: "01/09/2025 a 30/09/2025" → 09/2025). Se cruzar dois meses,
+       use o mês em que o período TERMINA, salvo indicação explícita em contrário.
+   3º) Contexto: tabelas/relatórios com lançamentos de um mesmo mês → esse é o mês da
+       competência. Se houver lançamentos de meses diferentes, use o predominante e reduza
+       a confiança.
+   4º) Data de emissão apenas como ÚLTIMO recurso para completar mês ou ano, reduzindo a
+       confiança. Só assuma "pagamento no mês seguinte" se o próprio documento indicar.
+   - Mês e ano podem estar em partes diferentes do documento — combine-os.
+   - Se só o mês ou só o ano for identificável, preencha o que for certo e deixe o outro null.
+
+D) CONFIANÇA — reflita a certeza GERAL do documento:
+   - 0.9–1.0: título claro, nome legível, competência explícita
+   - 0.7–0.89: algum campo deduzido pelo contexto, mas de forma consistente
+   - 0.4–0.69: deduções frágeis, caligrafia ambígua ou título/contexto divergentes
+   - abaixo de 0.4 ou 0: ilegível, página inválida ou dados insuficientes
+
+E) PÁGINAS DE CONTINUAÇÃO: documentos com várias páginas (ex: holerite de 2 páginas,
+   relatório longo) são UM único item no array. Não gere item novo para páginas de
+   continuação do mesmo documento.
+
+F) As regras "PROIBIDO INVENTAR DADOS" e "ORIENTAÇÃO DO DOCUMENTO" também valem integralmente
+   para estes documentos.
 
 IMPORTANTE: Se o PDF contiver MÚLTIPLOS documentos (ex: 15 recibos em um PDF), retorne TODOS no array JSON. Cada item do array é um documento separado.
 
@@ -546,6 +623,12 @@ REGRAS DE EXTRAÇÃO:
 5. NÚMERO OS: Se for tipo OS, está embutido em "Referente" (ex: "Referente: OS 12345").
 
 6. LETRA DIFÍCIL: Se nome ambíguo → reduza confiança, não chute.
+
+7. OUTROS TIPOS DE DOCUMENTO: o PDF pode conter documentos que NÃO são recibos (demonstrativos,
+   relatórios, comprovantes, holerites, listagens). Nesses casos, identifique o TIPO pelo
+   título e, se for genérico, pelo contexto do conteúdo; identifique o COLABORADOR (pessoa
+   que recebe) e a COMPETÊNCIA (período de referência) entendendo o contexto do documento,
+   mesmo sem os campos "Emitente"/"Referente".
 
 Retorne APENAS um JSON array válido com:
 [
