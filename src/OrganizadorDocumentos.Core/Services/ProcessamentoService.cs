@@ -1,5 +1,6 @@
 namespace OrganizadorDocumentos.Core.Services;
 
+using System.Text;
 using OrganizadorDocumentos.Core.Enums;
 using OrganizadorDocumentos.Core.Models;
 using OrganizadorDocumentos.Core.Services.Interfaces;
@@ -148,7 +149,7 @@ public class ProcessamentoService : IProcessamentoService
                 resultado.Mensagem = "Competência não identificada no documento";
                 _log.Aviso(resultado.Mensagem);
             }
-            else if (!dados.TemSigla)
+            else if (!dados.TemSigla && !dados.TemTipoDocumento)
             {
                 resultado.Status = StatusProcessamento.Revisar;
                 resultado.Mensagem = "Tipo de documento não identificado";
@@ -310,15 +311,64 @@ public class ProcessamentoService : IProcessamentoService
 
     private string GerarNomeArquivo(DocumentoFinanceiro dados, Competencia competencia)
     {
-        var sigla = dados.Sigla ?? "XX";
+        var prefixo = ObterPrefixoArquivo(dados);
         var nomeColaborador = dados.Colaborador!.Replace(" ", "_");
-        var nomeBase = $"{sigla}_{nomeColaborador}_{competencia.Mes:D2}-{competencia.Ano}";
+        var nomeBase = $"{prefixo}_{nomeColaborador}_{competencia.Mes:D2}-{competencia.Ano}";
 
-        if (dados.Sigla == "OS" && !string.IsNullOrWhiteSpace(dados.NumeroOS))
+        if (string.Equals(dados.Sigla, "OS", StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(dados.NumeroOS))
         {
             nomeBase = $"OS_{nomeColaborador}_OS-{dados.NumeroOS}";
         }
 
         return $"{nomeBase}.pdf";
+    }
+
+    /// <summary>
+    /// Prefixo do nome do arquivo: sigla válida para recibos conhecidos
+    /// (VT, VA, AC, ...) e, para documentos que não são recibos, o título do documento
+    /// sanitizado (ex: "Termo de Contrato" → "TERMO_DE_CONTRATO"), com fallback "DOC".
+    /// </summary>
+    private static string ObterPrefixoArquivo(DocumentoFinanceiro dados)
+    {
+        if (dados.EhReciboConhecido)
+            return dados.Sigla!.ToUpperInvariant();
+
+        var tipoSanitizado = SanitizarParaNomeArquivo(dados.TipoDocumento);
+        return string.IsNullOrEmpty(tipoSanitizado) ? "DOC" : tipoSanitizado;
+    }
+
+    private static string SanitizarParaNomeArquivo(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto))
+            return string.Empty;
+
+        var builder = new StringBuilder();
+        var separadorPendente = false;
+
+        foreach (var caractere in texto.Trim().ToUpperInvariant())
+        {
+            if (char.IsLetterOrDigit(caractere))
+            {
+                if (separadorPendente && builder.Length > 0)
+                {
+                    builder.Append('_');
+                }
+
+                builder.Append(caractere);
+                separadorPendente = false;
+            }
+            else if (char.IsWhiteSpace(caractere) || caractere is '-' or '.' or '_')
+            {
+                separadorPendente = builder.Length > 0;
+            }
+        }
+
+        var resultado = builder.ToString();
+
+        if (resultado.Length > 50)
+            resultado = resultado[..50];
+
+        return resultado.Trim('_');
     }
 }

@@ -25,8 +25,8 @@ Retorne APENAS um JSON válido com a seguinte estrutura (ARRAY de documentos):
 [
   {
     "colaborador": "nome completo ou null",
-    "tipo_documento": "descrição do tipo ou null",
-    "sigla": "VT|VA|AC|BO|CO|SP|DE|SE|SB|OS|null",
+    "tipo_documento": "título/descrição do tipo ou null (OBRIGATÓRIO quando o documento NÃO é recibo)",
+    "sigla": "VT|VA|AC|BO|CO|SP|DE|SE|SB|OS|null (null quando o documento NÃO é recibo)",
     "competencia": {
       "mes": 1-12 ou null,
       "ano": YYYY ou null
@@ -40,6 +40,10 @@ Retorne APENAS um JSON válido com a seguinte estrutura (ARRAY de documentos):
 Siglas: VT=Vale Transporte, VA=Vale Alimentação, AC=Ajuda de Custo,
 BO=Bonificação, CO=Comissão, SP=Serviço Prestado, DE=Diária,
 SE=Salário Extra, SB=Salário Base, OS=Vale por OS
+
+IMPORTANTE: as siglas acima são SEMPRE de benefícios. Documentos que NÃO são recibos
+de benefício (ex.: "Termo de Contrato", "Procuração", "Declaração", "Atestado") NÃO têm
+sigla: retorne "sigla": null e "tipo_documento" com o título do documento (regra G).
 
 ═══════════════════════════════════════════════════════════════
 CLASSIFICAÇÃO DO DOCUMENTO (APLICA-SE A DOCUMENTOS DIGITAIS E ESCANEADOS)
@@ -89,8 +93,9 @@ REGRAS ESPECIAIS PARA RECIBOS MANUSCRITOS / DIGITALIZADOS
    - Por extenso (ex: "Referente: Vale Transporte") → mapeie para a sigla correta (VT, VA, AC, BO, CO, SP, DE, SE, SB, OS)
    - Como sigla solta no campo "nº" próximo ao valor (ex: "nº VT")
    Se não conseguir identificar a sigla com segurança, deixe o campo sigla como
-   null. Isso fará o documento ir automaticamente para revisão manual (REVISAR),
-   o que é o comportamento correto quando há dúvida sobre o tipo de pagamento.
+   null e preencha "tipo_documento" com "Recibo" (o título do documento). Documentos com
+   "tipo_documento" preenchido ainda são processados automaticamente; somente os que
+   não tiverem nem sigla nem tipo vão para revisão manual (REVISAR).
 
 5. COMPETÊNCIA (mês/ano): O mês normalmente aparece escrito por extenso IMEDIATAMENTE
    após o texto de "Referente" (ex: "Referente: Vale Transporte de Setembro").
@@ -161,9 +166,9 @@ A) TIPO / SIGLA — o tipo geralmente é dado pelo TÍTULO do documento:
        - Pagamento vinculado a número de ordem de serviço → OS
    3º) Se título e conteúdo divergirem, PREVALECE O TÍTULO, mas reduza a confiança.
    4º) Se o documento misturar tipos (ex: holerite com salário + comissão), use o tipo
-       principal indicado no título; se não houver, use o de maior valor.
-   5º) Se ainda restar dúvida entre dois ou mais tipos → sigla: null (vai para REVISAR).
-   Preencha "tipo_documento" com o título/descrição como aparece no documento.
+      principal indicado no título; se não houver, use o de maior valor.
+   5º) Se ainda restar dúvida entre dois ou mais tipos → sigla: null e preencha
+      "tipo_documento" com o título/descrição como aparece no documento.
 
 B) COLABORADOR — quando não houver rótulo explícito, entenda o CONTEXTO:
    - Nome em destaque no cabeçalho (ex: "Relatório de Diárias — João da Silva")
@@ -201,6 +206,19 @@ E) PÁGINAS DE CONTINUAÇÃO: documentos com várias páginas (ex: holerite de 2
 
 F) As regras "PROIBIDO INVENTAR DADOS" e "ORIENTAÇÃO DO DOCUMENTO" também valem integralmente
    para estes documentos.
+
+G) DOCUMENTOS SEM SIGLA (NÃO-RECIBO) — REGRA OBRIGATÓRIA:
+   Documentos como "TERMO DE CONTRATO", "PROCURAÇÃO", "DECLARAÇÃO", "ATESTADO", "AVISO",
+   "ESCALA", "TERMO DE RESPONSABILIDADE" NÃO são recibos de benefício e NÃO possuem sigla.
+   Nesses casos:
+   - "sigla" DEVE ser null — NUNCA invente uma sigla, NUNCA repita o título no campo sigla
+     e NUNCA use "XX", "DOC" ou "RECIBO" como sigla.
+   - "tipo_documento" DEVE ser o TÍTULO do documento, exatamente como aparece no papel
+     (ex: "Termo de Contrato", "Procuração", "Declaração de Recebimento").
+   - A confiança pode ser alta (0.9) quando o título, o colaborador e a competência estão claros.
+   Documentos retornados com "sigla": null e "tipo_documento" preenchido são processados
+   automaticamente, usando o título como prefixo do nome do arquivo.
+   Só omita "tipo_documento" (null) se o documento realmente não tiver título identificável.
 
 IMPORTANTE: Se o PDF contiver MÚLTIPLOS documentos (ex: 15 recibos em um PDF), retorne TODOS no array JSON. Cada item do array é um documento separado.
 
@@ -630,12 +648,17 @@ REGRAS DE EXTRAÇÃO:
    que recebe) e a COMPETÊNCIA (período de referência) entendendo o contexto do documento,
    mesmo sem os campos "Emitente"/"Referente".
 
+8. DOCUMENTO SEM SIGLA (NÃO-RECIBO): se o título NÃO corresponde a nenhum benefício
+   (VT, VA, AC, BO, CO, SP, DE, SE, SB, OS) — ex.: "Termo de Contrato", "Procuração",
+   "Declaração" — retorne "sigla": null (NUNCA invente uma sigla) e "tipo_documento" com o
+   TÍTULO exato do documento. Esses documentos são processados automaticamente pelo título.
+
 Retorne APENAS um JSON array válido com:
 [
   {
     "colaborador": "nome ou null",
-    "tipo_documento": "descrição ou null",
-    "sigla": "VT|VA|AC|BO|CO|SP|DE|SE|SB|OS|null",
+    "tipo_documento": "título/descrição ou null (OBRIGATÓRIO quando o documento NÃO é recibo)",
+    "sigla": "VT|VA|AC|BO|CO|SP|DE|SE|SB|OS|null (null quando o documento NÃO é recibo)",
     "competencia": { "mes": 1-12 ou null, "ano": YYYY ou null },
     "data": "DD/MM/YYYY ou null",
     "numero_os": "número ou null",

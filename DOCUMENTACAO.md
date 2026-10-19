@@ -119,6 +119,11 @@ DATA: 15/09/2025
 | **Não achou colaborador** | Vai para **REVISAR** ⚠️ |
 | **Múltiplos colaboradores** | Vai para **REVISAR** ⚠️ |
 | **Arquivo já existe no destino** | Vai para **REVISAR** ⚠️ |
+| **Sem sigla e sem tipo_documento** | Vai para **REVISAR** ⚠️ |
+
+> **Documentos que não são recibos** (ex.: "Termo de Contrato", "Procuração", "Declaração")
+> são processados automaticamente: a IA devolve `sigla: null` e o título em `tipo_documento`,
+> que vira o prefixo do nome do arquivo (ex.: `TERMO_DE_CONTRATO_João_da_Silva_09-2026.pdf`).
 
 ---
 

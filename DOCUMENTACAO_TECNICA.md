@@ -420,7 +420,8 @@ Implementa IProcessamentoService. É o "gerente" central do sistema.
 1. Chama ApiService para extrair dados do PDF
 2. Verifica limiar de confiança (≥ 70%) → se falhar, vai para REVISAR
 3. Verifica competência → se não identificada, REVISAR
-4. Verifica sigla → se não identificada, REVISAR
+4. Verifica tipo do documento → se não tiver nem sigla nem tipo_documento, REVISAR
+   (documentos que não são recibos usam o título em `tipo_documento` como tipo)
 5. Busca colaborador no mapeamento (fuzzy match):
    - 0 matches → Cria novo colaborador automaticamente
    - 1 match → Procura/cria pasta Ano/Mês, move o arquivo
@@ -433,7 +434,8 @@ Implementa IProcessamentoService. É o "gerente" central do sistema.
 **Função — CriarColaboradorENovoAsync:** Cria pasta do colaborador, ano e mês, depois move o arquivo
 
 **Função — GerarNomeArquivo:** Gera nome no formato:
-- VT_JoaoSilva_05-2025.pdf (padrão)
+- VT_JoaoSilva_05-2025.pdf (padrão, sigla válida)
+- TERMO_DE_CONTRATO_JoaoSilva_05-2025.pdf (documento que não é recibo: prefixo = título sanitizado)
 - OS_JoaoSilva_OS-123.pdf (para documentos por OS)
 
 #### 5.6.2 `NormalizacaoService.cs` — "Tradutor" de Nomes

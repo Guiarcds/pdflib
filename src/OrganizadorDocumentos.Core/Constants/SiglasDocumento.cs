@@ -27,12 +27,12 @@ public static class SiglasDocumento
         { OS, "Vale feito em troca de OS" }
     };
 
-    public static bool ValidaSigla(string sigla)
+    public static bool ValidaSigla(string? sigla)
     {
         return Descricas.ContainsKey(sigla?.ToUpperInvariant() ?? string.Empty);
     }
 
-    public static string ObterDescricao(string sigla)
+    public static string ObterDescricao(string? sigla)
     {
         return Descricas.TryGetValue(sigla?.ToUpperInvariant() ?? string.Empty, out var descricao)
             ? descricao
