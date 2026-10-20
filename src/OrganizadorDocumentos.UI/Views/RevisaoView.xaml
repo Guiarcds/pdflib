@@ -6,7 +6,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" d:DesignHeight="700" d:DesignWidth="900">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <ScrollViewer CanContentScroll="False" VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
             <TextBlock Text="Revisão Manual" Style="{StaticResource HeaderTextStyle}"/>
 
@@ -74,7 +74,7 @@
 
                     <Border Background="#14FFFFFF" BorderBrush="{StaticResource GlassBorder}" BorderThickness="1"
                             CornerRadius="4" Height="450">
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                        <ScrollViewer CanContentScroll="False" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                             <Image Source="{Binding PreviewDocumento}" Stretch="None" HorizontalAlignment="Center"
                                    Visibility="{Binding PreviewDocumento, Converter={StaticResource ImageToVisibilityConverter}}">
                                 <Image.LayoutTransform>

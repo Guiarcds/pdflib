@@ -84,7 +84,7 @@
                                     CornerRadius="8"
                                     MinWidth="{Binding ActualWidth, ElementName=MainGrid}"
                                     MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                <ScrollViewer CanContentScroll="True">
+                                <ScrollViewer CanContentScroll="False">
                                     <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
                                 </ScrollViewer>
                             </Border>

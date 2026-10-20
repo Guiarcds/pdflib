@@ -70,7 +70,8 @@
 
             <Border Height="1" Background="{StaticResource GlassBorder}" />
 
-            <StackPanel Margin="24,18,24,18">
+            <ScrollViewer CanContentScroll="False" VerticalScrollBarVisibility="Auto" MaxHeight="520">
+                <StackPanel Margin="24,18,24,18">
 
                 <TextBlock Text="Unificar pastas de colaboradores"
                            FontSize="20" FontWeight="Bold"
@@ -128,7 +129,8 @@
                             Style="{StaticResource DangerButtonStyle}"
                             Click="Confirmar_Click" IsDefault="True"/>
                 </StackPanel>
-            </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
         </StackPanel>
     </Border>
 </Window>
