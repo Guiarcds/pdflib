@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using OrganizadorDocumentos.Core.Models;
 
 namespace OrganizadorDocumentos.UI.Views;
@@ -82,12 +84,14 @@ public partial class UnificarColaboradoresDialog : Window
         if (origem == null || destino == null)
         {
             ResumoTextBlock.Text = "Selecione os dois colaboradores para ver o resumo da operação.";
+            DefinirCorResumo("TextMuted");
             return;
         }
 
         if (string.Equals(origem.NomePasta, destino.NomePasta, StringComparison.OrdinalIgnoreCase))
         {
             ResumoTextBlock.Text = "A origem e o destino não podem ser o mesmo colaborador.";
+            DefinirCorResumo("Warning");
             return;
         }
 
@@ -95,6 +99,12 @@ public partial class UnificarColaboradoresDialog : Window
             $"Origem: {origem.NomePasta} ({origem.Anos.Count} ano(s), {ContarMeses(origem)} pasta(s) de mês)\n" +
             $"Destino: {destino.NomePasta} ({destino.Anos.Count} ano(s), {ContarMeses(destino)} pasta(s) de mês)\n" +
             "Arquivos com o mesmo nome no destino serão mantidos e o arquivo movido será renomeado.";
+        DefinirCorResumo("TextPrimary");
+    }
+
+    private void DefinirCorResumo(string recurso)
+    {
+        ResumoTextBlock.Foreground = Application.Current?.TryFindResource(recurso) as Brush ?? Brushes.White;
     }
 
     private static int ContarMeses(Colaborador colaborador) =>
@@ -133,5 +143,25 @@ public partial class UnificarColaboradoresDialog : Window
     private void Cancelar_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = false;
+    }
+
+    private void Fechar_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            try
+            {
+                DragMove();
+            }
+            catch (InvalidOperationException)
+            {
+                // a janela ainda não está pronta para ser movida
+            }
+        }
     }
 }

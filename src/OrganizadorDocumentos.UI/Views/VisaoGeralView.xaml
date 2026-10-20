@@ -70,7 +70,6 @@
                 <Button Content="Unificar"
                         Command="{Binding Mapeamento.UnificarCommand}"
                         Style="{StaticResource WarningButtonStyle}"
-                        IsEnabled="{Binding Mapeamento.PodeUnificar}"
                         ToolTip="Move todo o conteúdo de um colaborador para outro e exclui a pasta de origem"/>
                 <TextBlock Text="{Binding Mapeamento.StatusMapeamento}" VerticalAlignment="Center" Margin="15,0,0,0"
                            Foreground="{StaticResource TextMuted}"/>

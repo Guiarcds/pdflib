@@ -3,6 +3,9 @@
 
     <Color x:Key="BgNavy">#0B132B</Color>
 
+    <SolidColorBrush x:Key="BgNavyBrush" Color="#0B132B" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#1A2340" />
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#243052" />
     <SolidColorBrush x:Key="TextPrimary" Color="#F2F5FA" />
     <SolidColorBrush x:Key="TextMuted" Color="#9AA7C0" />
     <SolidColorBrush x:Key="GlassBorder" Color="#2EFFFFFF" />

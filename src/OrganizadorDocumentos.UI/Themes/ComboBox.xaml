@@ -7,6 +7,8 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
         <Setter Property="MinHeight" Value="30" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="Template">
@@ -30,13 +32,25 @@
                                 BorderThickness="1,0,0,0"
                                 CornerRadius="0,6,6,0"
                                 Width="30"
-                                Margin="0,1,1,1">
+                                Margin="0,1,1,1"
+                                IsHitTestVisible="False">
                             <Path x:Name="Arrow"
                                   Data="M0,0 L4,4 L8,0 Z"
                                   Fill="{StaticResource TextMuted}"
                                   HorizontalAlignment="Center"
                                   VerticalAlignment="Center" />
                         </Border>
+                        <ToggleButton Grid.ColumnSpan="2"
+                                      x:Name="ToggleButton"
+                                      Focusable="False"
+                                      Margin="0"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border Background="Transparent" CornerRadius="6" />
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
                         <ContentPresenter x:Name="ContentPresenter"
                                           Grid.Column="0"
                                           Margin="{TemplateBinding Padding}"
@@ -58,6 +72,8 @@
                                  Focusable="True" />
                         <Popup x:Name="PART_Popup"
                                AllowsTransparency="True"
+                               Focusable="False"
+                               PlacementTarget="{Binding ElementName=MainGrid}"
                                IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
                                Placement="Bottom"
                                PopupAnimation="Slide">

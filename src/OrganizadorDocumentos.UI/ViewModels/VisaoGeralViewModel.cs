@@ -64,5 +64,16 @@ public class VisaoGeralViewModel : ViewModelBase
         UltimaAtualizacao = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
     }
 
-    private void OnMapeamentoAtualizado(object? sender, MapeamentoEventArgs e) => AtualizarEstatisticas();
+    private void OnMapeamentoAtualizado(object? sender, MapeamentoEventArgs e)
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+
+        if (dispatcher != null && !dispatcher.CheckAccess())
+        {
+            dispatcher.BeginInvoke(AtualizarEstatisticas);
+            return;
+        }
+
+        AtualizarEstatisticas();
+    }
 }
