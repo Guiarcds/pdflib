@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows.Input;
 using Microsoft.Win32;
 using OrganizadorDocumentos.Core.Services.Interfaces;
@@ -8,6 +9,8 @@ public class ConfiguracaoViewModel : ViewModelBase
 {
     private readonly IConfiguracaoService _configuracaoService;
     private readonly ILogService _logService;
+    private readonly IApiService _apiService;
+    private readonly ITokensHistoricoService _tokensHistoricoService;
 
     private string _pastaRaiz = string.Empty;
     public string PastaRaiz
@@ -79,18 +82,32 @@ public class ConfiguracaoViewModel : ViewModelBase
         set => SetProperty(ref _statusSalvamento, value);
     }
 
+    private string _descricaoTokens = string.Empty;
+    public string DescricaoTokens
+    {
+        get => _descricaoTokens;
+        set => SetProperty(ref _descricaoTokens, value);
+    }
+
     public ICommand SelecionarPastaCommand { get; }
     public ICommand SalvarCommand { get; }
 
-    public ConfiguracaoViewModel(IConfiguracaoService configuracaoService, ILogService logService)
+    public ConfiguracaoViewModel(
+        IConfiguracaoService configuracaoService,
+        ILogService logService,
+        IApiService apiService,
+        ITokensHistoricoService tokensHistoricoService)
     {
         _configuracaoService = configuracaoService;
         _logService = logService;
+        _apiService = apiService;
+        _tokensHistoricoService = tokensHistoricoService;
 
         SelecionarPastaCommand = new RelayCommand(_ => SelecionarPasta());
         SalvarCommand = new RelayCommand(_ => SalvarConfiguracao());
 
         CarregarConfiguracao();
+        AtualizarDescricaoTokens();
     }
 
     private void CarregarConfiguracao()
@@ -125,6 +142,10 @@ public class ConfiguracaoViewModel : ViewModelBase
     {
         try
         {
+            var chaveAnterior = _configuracaoService.ObterConfiguracao().ApiKey ?? string.Empty;
+            var chaveNova = ApiKey ?? string.Empty;
+            var apiKeyAlterada = !string.Equals(chaveAnterior, chaveNova, StringComparison.Ordinal);
+
             _configuracaoService.AtualizarConfiguracao(config =>
             {
                 config.PastaRaiz = PastaRaiz;
@@ -138,6 +159,12 @@ public class ConfiguracaoViewModel : ViewModelBase
                 config.MascaraMes = MascaraMes;
             });
 
+            if (apiKeyAlterada)
+            {
+                RegistrarTokensGastos();
+                return;
+            }
+
             StatusSalvamento = $"Configurações salvas em {DateTime.Now:HH:mm:ss}";
             _logService.Informacao("Configurações atualizadas pelo usuário");
         }
@@ -145,6 +172,43 @@ public class ConfiguracaoViewModel : ViewModelBase
         {
             StatusSalvamento = $"Erro ao salvar: {ex.Message}";
             _logService.Erro("Erro ao salvar configurações", ex);
+        }
+    }
+
+    private void RegistrarTokensGastos()
+    {
+        var uso = _apiService.UsoAcumulado;
+        var totalGeral = _tokensHistoricoService.Registrar(uso);
+
+        _apiService.ResetarUso();
+
+        var nomeArquivo = Path.GetFileName(_tokensHistoricoService.CaminhoArquivo);
+        var custo = uso.Custo.HasValue ? $" (US$ {uso.Custo.Value:0.000000})" : string.Empty;
+
+        StatusSalvamento =
+            $"Configurações salvas em {DateTime.Now:HH:mm:ss} — API Key alterada: " +
+            $"{uso.TotalTokens:N0} token(s){custo} registrados em '{nomeArquivo}' (total geral: {totalGeral:N0})";
+
+        _logService.Informacao(
+            $"API Key alterada: {uso.TotalTokens:N0} token(s) registrados em '{_tokensHistoricoService.CaminhoArquivo}'. " +
+            $"Total geral: {totalGeral:N0} token(s). Contador reiniciado.");
+
+        AtualizarDescricaoTokens();
+    }
+
+    private void AtualizarDescricaoTokens()
+    {
+        try
+        {
+            var historico = _tokensHistoricoService.TotalTokensArquivo;
+            DescricaoTokens =
+                $"Tokens com a API Key atual: {_apiService.UsoAcumulado.TotalTokens:N0} • " +
+                $"Total acumulado no arquivo: {historico:N0} • " +
+                $"Arquivo: {_tokensHistoricoService.CaminhoArquivo}";
+        }
+        catch (Exception ex)
+        {
+            DescricaoTokens = $"Não foi possível ler o histórico de tokens: {ex.Message}";
         }
     }
 }

@@ -62,6 +62,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="API Key:" VerticalAlignment="Center"/>
@@ -71,6 +72,10 @@
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Modelo:" VerticalAlignment="Center"/>
                         <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ApiModel, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="5"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="5,12,0,0"
+                                   FontSize="12" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap"
+                                   Text="{Binding DescricaoTokens}"/>
                     </Grid>
                 </StackPanel>
             </Border>

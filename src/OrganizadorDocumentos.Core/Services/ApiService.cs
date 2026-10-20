@@ -15,6 +15,36 @@ public class ApiService : IApiService
     private readonly IConfiguracaoService _configuracao;
     private readonly ILogService _log;
     private readonly HttpClient _httpClient;
+    private readonly object _usoLock = new();
+    private UsoTokens _ultimoUso = new();
+    private UsoTokens _usoAcumulado = new();
+
+    public UsoTokens UltimoUso
+    {
+        get { lock (_usoLock) { return _ultimoUso; } }
+    }
+
+    public UsoTokens UsoAcumulado
+    {
+        get { lock (_usoLock) { return _usoAcumulado; } }
+    }
+
+    public event EventHandler<UsoTokens>? UsoAlterado;
+
+    public void ResetarUso()
+    {
+        UsoTokens acumulado;
+
+        lock (_usoLock)
+        {
+            _ultimoUso = new UsoTokens();
+            _usoAcumulado = new UsoTokens();
+            acumulado = _usoAcumulado;
+        }
+
+        _log.Informacao("Contador de tokens gastos reiniciado");
+        UsoAlterado?.Invoke(this, acumulado);
+    }
 
 private static readonly string SystemPrompt = """
 Você é um especialista em documentos financeiros brasileiros.
@@ -555,6 +585,8 @@ Regras:
             throw new HttpRequestException($"Erro na API: {response.StatusCode} - {jsonResponse}");
         }
 
+        RegistrarUso(jsonResponse);
+
         return ParseRespostaIAArray(jsonResponse);
     }
 
@@ -705,6 +737,8 @@ Retorne APENAS um JSON array válido com:
                 throw new HttpRequestException($"Erro na API: {response.StatusCode} - {jsonResponse}");
             }
 
+            RegistrarUso(jsonResponse);
+
             return ParseRespostaIAArray(jsonResponse);
         }
         catch (Exception ex)
@@ -718,6 +752,53 @@ Retorne APENAS um JSON array válido com:
             {
                 try { File.Delete(img); } catch { }
             }
+        }
+    }
+
+    /// <summary>
+    /// Lê o bloco "usage" da resposta da OpenRouter (tokens e custo) e atualiza os acumuladores.
+    /// </summary>
+    private void RegistrarUso(string jsonResponse)
+    {
+        try
+        {
+            var usage = JObject.Parse(jsonResponse)["usage"];
+            if (usage == null)
+                return;
+
+            var uso = new UsoTokens
+            {
+                PromptTokens = usage["prompt_tokens"]?.Value<int>() ?? 0,
+                CompletionTokens = usage["completion_tokens"]?.Value<int>() ?? 0,
+                TotalTokens = usage["total_tokens"]?.Value<int>() ?? 0,
+                ReasoningTokens = usage["completion_tokens_details"]?["reasoning_tokens"]?.Value<int>() ?? 0,
+                CachedTokens = usage["prompt_tokens_details"]?["cached_tokens"]?.Value<int>() ?? 0,
+                Custo = usage["cost"]?.Value<double?>()
+            };
+
+            if (uso.PromptTokens == 0 && uso.CompletionTokens == 0 && uso.TotalTokens == 0)
+                return;
+
+            UsoTokens acumulado;
+
+            lock (_usoLock)
+            {
+                _ultimoUso = uso;
+                _usoAcumulado = _usoAcumulado.Somar(uso);
+                acumulado = _usoAcumulado;
+            }
+
+            _log.Informacao(
+                $"Tokens: prompt={uso.PromptTokens} completion={uso.CompletionTokens} total={uso.TotalTokens}" +
+                (uso.ReasoningTokens > 0 ? $" reasoning={uso.ReasoningTokens}" : string.Empty) +
+                (uso.CachedTokens > 0 ? $" cached={uso.CachedTokens}" : string.Empty) +
+                (uso.Custo.HasValue ? $" custo={uso.Custo.Value:0.000000}" : string.Empty));
+
+            UsoAlterado?.Invoke(this, acumulado);
+        }
+        catch (Exception ex)
+        {
+            _log.Aviso($"Não foi possível ler o uso de tokens da resposta da API: {ex.Message}");
         }
     }
 
@@ -854,6 +935,8 @@ Regras:
             _log.Erro($"Erro na API OpenRouter: {response.StatusCode} - {jsonResponse}");
             throw new HttpRequestException($"Erro na API: {response.StatusCode} - {jsonResponse}");
         }
+
+        RegistrarUso(jsonResponse);
 
         return ParseRespostaIADecisoes(jsonResponse);
     }

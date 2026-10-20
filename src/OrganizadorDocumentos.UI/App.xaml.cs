@@ -35,8 +35,12 @@ public partial class App : Application
         var configPath = Path.Combine(appDataPath, "config.json");
         var logPath = Path.Combine(appDataPath, "logs", $"log_{DateTime.Now:yyyy-MM-dd}.txt");
 
-        services.AddSingleton<IConfiguracaoService>(new ConfiguracaoService(configPath));
-        services.AddSingleton<ILogService>(new LogService(logPath));
+        var configuracaoService = new ConfiguracaoService(configPath);
+        var logService = new LogService(logPath);
+
+        services.AddSingleton<IConfiguracaoService>(configuracaoService);
+        services.AddSingleton<ILogService>(logService);
+        services.AddSingleton<ITokensHistoricoService>(new TokensHistoricoService(configuracaoService, logService, appDataPath));
         services.AddSingleton<INormalizacaoService, NormalizacaoService>();
         services.AddSingleton<IFileService, FileService>();
         services.AddSingleton<IMapeamentoService, MapeamentoService>();
@@ -55,6 +59,21 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        try
+        {
+            var apiService = _serviceProvider?.GetService<IApiService>();
+            var tokensHistorico = _serviceProvider?.GetService<ITokensHistoricoService>();
+
+            if (apiService != null && tokensHistorico != null && apiService.UsoAcumulado.TotalTokens > 0)
+            {
+                tokensHistorico.Registrar(apiService.UsoAcumulado);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Erro ao registrar tokens na saída: {ex.Message}");
+        }
+
         _serviceProvider?.Dispose();
         base.OnExit(e);
     }

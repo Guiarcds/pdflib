@@ -150,6 +150,77 @@ public class ApiServiceTests
         Assert.Equal(2026, documento.Competencia?.Ano);
     }
 
+    [Fact]
+    public async Task ExtrairDadosDocumentoAsync_RegistraTokensDaResposta()
+    {
+        var caminhoPdf = CriarPdfTeste(1);
+        var configuracao = new TestConfiguracaoService(new AppConfig
+        {
+            ApiKey = "test-key",
+            ApiModel = "test-model",
+            PastaRaiz = _pastaTeste
+        });
+
+        var fakeResponse = CriarRespostaFake("[]", new
+        {
+            prompt_tokens = 1200,
+            completion_tokens = 340,
+            total_tokens = 1540,
+            prompt_tokens_details = new { cached_tokens = 15 },
+            completion_tokens_details = new { reasoning_tokens = 12 },
+            cost = 0.00123
+        });
+
+        using var httpClient = new HttpClient(new FakeHttpMessageHandler(fakeResponse));
+        var logPath = Path.Combine(_pastaTeste, "test.log");
+        var log = new LogService(logPath);
+        var apiService = new ApiService(configuracao, log, httpClient);
+
+        await apiService.ExtrairDadosDocumentoAsync(caminhoPdf);
+
+        Assert.Equal(1200, apiService.UsoAcumulado.PromptTokens);
+        Assert.Equal(340, apiService.UsoAcumulado.CompletionTokens);
+        Assert.Equal(1540, apiService.UsoAcumulado.TotalTokens);
+        Assert.Equal(12, apiService.UsoAcumulado.ReasoningTokens);
+        Assert.Equal(15, apiService.UsoAcumulado.CachedTokens);
+        Assert.Equal(0.00123, apiService.UsoAcumulado.Custo!.Value, 5);
+        Assert.Equal(1540, apiService.UltimoUso.TotalTokens);
+    }
+
+    [Fact]
+    public async Task ResetarUso_ZeraContadoresDeTokens()
+    {
+        var caminhoPdf = CriarPdfTeste(1);
+        var configuracao = new TestConfiguracaoService(new AppConfig
+        {
+            ApiKey = "test-key",
+            ApiModel = "test-model",
+            PastaRaiz = _pastaTeste
+        });
+
+        var fakeResponse = CriarRespostaFake("[]", new
+        {
+            prompt_tokens = 100,
+            completion_tokens = 50,
+            total_tokens = 150,
+            cost = 0.001
+        });
+
+        using var httpClient = new HttpClient(new FakeHttpMessageHandler(fakeResponse));
+        var logPath = Path.Combine(_pastaTeste, "test.log");
+        var log = new LogService(logPath);
+        var apiService = new ApiService(configuracao, log, httpClient);
+
+        await apiService.ExtrairDadosDocumentoAsync(caminhoPdf);
+        Assert.Equal(150, apiService.UsoAcumulado.TotalTokens);
+
+        apiService.ResetarUso();
+
+        Assert.Equal(0, apiService.UsoAcumulado.TotalTokens);
+        Assert.Equal(0, apiService.UltimoUso.TotalTokens);
+        Assert.Null(apiService.UsoAcumulado.Custo);
+    }
+
     private string CriarPdfTeste(int numPages)
     {
         var path = Path.Combine(_pastaTeste, $"test_pdf_{Guid.NewGuid():N}.pdf");
@@ -163,11 +234,11 @@ public class ApiServiceTests
         return path;
     }
 
-    private HttpResponseMessage CriarRespostaFake(string content)
+    private HttpResponseMessage CriarRespostaFake(string content, object? usage = null)
     {
-        var jsonResponse = JsonConvert.SerializeObject(new
+        var payload = new Dictionary<string, object?>
         {
-            choices = new[]
+            ["choices"] = new[]
             {
                 new
                 {
@@ -177,7 +248,12 @@ public class ApiServiceTests
                     }
                 }
             }
-        });
+        };
+
+        if (usage != null)
+            payload["usage"] = usage;
+
+        var jsonResponse = JsonConvert.SerializeObject(payload);
 
         return new HttpResponseMessage(HttpStatusCode.OK)
         {

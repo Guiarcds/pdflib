@@ -149,6 +149,20 @@ public class ProcessamentoServiceTests : IDisposable
     {
         public DocumentoFinanceiro Documento { get; set; } = new();
 
+        public UsoTokens UltimoUso { get; } = new();
+
+        public UsoTokens UsoAcumulado { get; } = new();
+
+        public event EventHandler<UsoTokens>? UsoAlterado
+        {
+            add { }
+            remove { }
+        }
+
+        public void ResetarUso()
+        {
+        }
+
         public Task<List<DocumentoFinanceiro>> ExtrairDadosAsync(string caminhoPdf)
             => Task.FromResult(new List<DocumentoFinanceiro> { Documento });
 

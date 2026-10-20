@@ -34,9 +34,13 @@
 
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                     <StackPanel>
-                        <TextBlock Text="Erros" Style="{StaticResource LabelTextStyle}"/>
-                        <TextBlock Text="{Binding TotalErros}" FontSize="36" FontWeight="Bold"
-                                   Foreground="{StaticResource Danger}"/>
+                        <TextBlock Text="Tokens Gastos" Style="{StaticResource LabelTextStyle}"/>
+                        <TextBlock Text="{Binding TokensGastos, StringFormat='N0'}" FontSize="36" FontWeight="Bold"
+                                   Foreground="{StaticResource Accent}"/>
+                        <TextBlock Text="{Binding CustoEstimado, StringFormat='Custo: {0}'}"
+                                   Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding TokensHistorico, StringFormat='Histórico: {0:N0} tokens'}"
+                                   Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Border>
             </Grid>
