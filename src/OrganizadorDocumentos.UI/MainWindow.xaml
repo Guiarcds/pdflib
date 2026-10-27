@@ -9,7 +9,7 @@
         Title="{Binding Titulo}" Height="700" Width="1100"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
-        Background="Transparent"
+        Background="#01000000"
         Foreground="{StaticResource TextPrimary}"
         AllowsTransparency="True">
     <WindowChrome.WindowChrome>
