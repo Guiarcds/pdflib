@@ -95,7 +95,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Pasta" Binding="{Binding NomePasta}" Width="*"/>
                             <DataGridTextColumn Header="Nome Normalizado" Binding="{Binding NomeNormalizado}" Width="*"/>
-                            <DataGridTextColumn Header="Anos" Binding="{Binding Anos.Count}" Width="80"/>
+                            <DataGridTextColumn Header="Documentos" Binding="{Binding TotalDocumentos}" Width="*"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
