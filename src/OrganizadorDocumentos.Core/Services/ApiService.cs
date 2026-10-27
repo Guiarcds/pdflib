@@ -118,14 +118,11 @@ REGRAS ESPECIAIS PARA RECIBOS MANUSCRITOS / DIGITALIZADOS
    NUNCA confunda com a empresa pagadora — o "Emitente" no recibo é a pessoa que
    está RECEBENDO o pagamento e assinando, ou seja, é o colaborador.
 
-4. TIPO DE PAGAMENTO / SIGLA: Procure o texto escrito após a palavra "Referente".
-   Ele pode vir:
-   - Por extenso (ex: "Referente: Vale Transporte") → mapeie para a sigla correta (VT, VA, AC, BO, CO, SP, DE, SE, SB, OS)
-   - Como sigla solta no campo "nº" próximo ao valor (ex: "nº VT")
-   Se não conseguir identificar a sigla com segurança, deixe o campo sigla como
-   null e preencha "tipo_documento" com "Recibo" (o título do documento). Documentos com
-   "tipo_documento" preenchido ainda são processados automaticamente; somente os que
-   não tiverem nem sigla nem tipo vão para revisão manual (REVISAR).
+    4. TIPO DE PAGAMENTO / SIGLA (PRIORIDADE OBRIGATÓRIA PARA RECIBOS):
+       Para **RECIBOS**, siga EXATAMENTE esta ordem de prioridade para identificar a sigla:
+       1º) **CANTO SUPERIOR ESQUERDO APÓS "nº"**: Procure PRIORITARIAMENTE no cabeçalho/canto superior esquerdo do recibo pelo campo que contém "nº" seguido da sigla (ex: "nº VT", "Nº VA", "nº AC", "nº OS"). Em muitos recibos manuscritos/digitalizados, essa informação define qual benefício está sendo pago e deve ter precedência absoluta.
+       2º) **APÓS "REFERENTE"**: Somente se NÃO houver sigla identificável logo após "nº" no canto superior esquerdo, verifique o texto escrito após a palavra "Referente". Ele pode vir por extenso (ex: "Referente: Vale Transporte") → mapeie para a sigla correta (VT, VA, AC, BO, CO, SP, DE, SE, SB, OS). Quando for OS (Vale por OS), o número costuma vir embutido nesse mesmo texto (ex: "Referente: OS 12345").
+       Se não conseguir identificar a sigla com segurança seguindo esta ordem, deixe o campo sigla como null e preencha "tipo_documento" com "Recibo" (o título do documento). Documentos com "tipo_documento" preenchido ainda são processados automaticamente; somente os que não tiverem nem sigla nem tipo vão para revisão manual (REVISAR).
 
 5. COMPETÊNCIA (mês/ano): O mês normalmente aparece escrito por extenso IMEDIATAMENTE
    após o texto de "Referente" (ex: "Referente: Vale Transporte de Setembro").
@@ -666,11 +663,11 @@ REGRAS DE EXTRAÇÃO:
 
 2. COLABORADOR: É o nome após "Emitente" (quem RECEBE/assina). NÃO confunda com empresa pagadora.
 
-3. SIGLA: Procure após "Referente". Pode vir por extenso ("Vale Transporte") → VT, VA, AC, BO, CO, SP, DE, SE, SB, OS. Se houver "nº VT" próximo ao valor, use essa sigla. Se incerto → null.
+3. SIGLA (PRIORIDADE PARA RECIBOS): Para RECIBOS, procure PRIMEIRO no CANTO SUPERIOR ESQUERDO, logo após "nº" (ex: "nº VT", "Nº VA", "nº OS"). SÓ DEPOIS, se não encontrar nada válido ali, procure após "Referente" (por extenso ou embutido, ex: "Referente: Vale Transporte" ou "Referente: OS 12345"). Mapeie para VT, VA, AC, BO, CO, SP, DE, SE, SB, OS. Se incerto → null.
 
 4. COMPETÊNCIA: Mês (por extenso) logo após "Referente" (ex: "Referente: Vale Transporte de Setembro"). Ano em outra parte (cabeçalho, assinatura).
 
-5. NÚMERO OS: Se for tipo OS, está embutido em "Referente" (ex: "Referente: OS 12345").
+5. NÚMERO OS: If for type OS, está embutido em "Referente" (ex: "Referente: OS 12345").
 
 6. LETRA DIFÍCIL: Se nome ambíguo → reduza confiança, não chute.
 
