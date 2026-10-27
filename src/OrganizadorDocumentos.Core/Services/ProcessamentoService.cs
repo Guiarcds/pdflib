@@ -42,7 +42,24 @@ public class ProcessamentoService : IProcessamentoService
             _log.Informacao($"Processando (novo fluxo 4 fases): {Path.GetFileName(caminhoPdf)}");
 
             var config = _configuracao.ObterConfiguracao();
-            pastaTemp = Path.Combine(config.PastaRaiz, "TEMP_PROCESSAMENTO", Guid.NewGuid().ToString("N"));
+            var pastaTempRoot = Path.Combine(config.PastaRaiz, "TEMP_PROCESSAMENTO");
+            
+            if (!Directory.Exists(pastaTempRoot))
+            {
+                Directory.CreateDirectory(pastaTempRoot);
+                var atributos = File.GetAttributes(pastaTempRoot);
+                File.SetAttributes(pastaTempRoot, atributos | FileAttributes.Hidden);
+            }
+            else
+            {
+                var atributos = File.GetAttributes(pastaTempRoot);
+                if ((atributos & FileAttributes.Hidden) == 0)
+                {
+                    File.SetAttributes(pastaTempRoot, atributos | FileAttributes.Hidden);
+                }
+            }
+            
+            pastaTemp = Path.Combine(pastaTempRoot, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(pastaTemp);
 
             var decisoes = await _apiService.AnalisarEstruturaPdfAsync(caminhoPdf);
@@ -56,6 +73,8 @@ public class ProcessamentoService : IProcessamentoService
                     Status = StatusProcessamento.Revisar,
                     Mensagem = "IA não retornou decisões para nenhuma página"
                 });
+                if (pastaTemp != null)
+                    LimparTemp(pastaTemp);
                 return resultados;
             }
 
@@ -69,6 +88,8 @@ public class ProcessamentoService : IProcessamentoService
                     Status = StatusProcessamento.Revisar,
                     Mensagem = "Todas as páginas foram descartadas (em branco/ruído)"
                 });
+                if (pastaTemp != null)
+                    LimparTemp(pastaTemp);
                 return resultados;
             }
 
@@ -276,6 +297,15 @@ public class ProcessamentoService : IProcessamentoService
         {
             var config = _configuracao.ObterConfiguracao();
             var pastaColaboradores = Path.Combine(config.PastaRaiz, config.PastaColaboradores);
+            
+            if (!Directory.Exists(pastaColaboradores))
+            {
+                resultado.Status = StatusProcessamento.Revisar;
+                resultado.Mensagem = $"Pasta de colaboradores não encontrada: {pastaColaboradores}. Crie manualmente esta pasta e configure o nome correto em Configurações.";
+                _log.Aviso(resultado.Mensagem);
+                return resultado;
+            }
+            
             var nomePasta = dados.Colaborador!.ToUpperInvariant()
                 .Replace(" ", "_")
                 .Replace("-", "_");
