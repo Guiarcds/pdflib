@@ -1,3 +1,4 @@
+using System.IO;
 using OrganizadorDocumentos.Core.Models;
 using OrganizadorDocumentos.Core.Services.Interfaces;
 
@@ -9,6 +10,8 @@ public class VisaoGeralViewModel : ViewModelBase
     private readonly IMapeamentoService _mapeamentoService;
     private readonly IApiService _apiService;
     private readonly ITokensHistoricoService _tokensHistoricoService;
+    private readonly IFileService _fileService;
+    private readonly IConfiguracaoService _configuracaoService;
 
     private int _totalProcessados;
     public int TotalProcessados
@@ -66,12 +69,16 @@ public class VisaoGeralViewModel : ViewModelBase
         IMapeamentoService mapeamentoService,
         IApiService apiService,
         ITokensHistoricoService tokensHistoricoService,
+        IFileService fileService,
+        IConfiguracaoService configuracaoService,
         MapeamentoViewModel mapeamentoViewModel)
     {
         _processamentoService = processamentoService;
         _mapeamentoService = mapeamentoService;
         _apiService = apiService;
         _tokensHistoricoService = tokensHistoricoService;
+        _fileService = fileService;
+        _configuracaoService = configuracaoService;
         Mapeamento = mapeamentoViewModel;
 
         _mapeamentoService.MapeamentoAtualizado += OnMapeamentoAtualizado;
@@ -85,7 +92,30 @@ public class VisaoGeralViewModel : ViewModelBase
         _mapeamentoService.ObterMapeamento();
         AtualizarUsoTokens(_apiService.UsoAcumulado);
         AtualizarHistorico();
+        AtualizarContadoresDocumentos();
         UltimaAtualizacao = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+    }
+
+    private void AtualizarContadoresDocumentos()
+    {
+        try
+        {
+            var config = _configuracaoService.ObterConfiguracao();
+            var pastaRevisar = Path.Combine(config.PastaRaiz, config.PastaRevisar);
+            TotalRevisar = _fileService.PastaExiste(pastaRevisar)
+                ? Directory.GetFiles(pastaRevisar, "*.pdf", SearchOption.TopDirectoryOnly).Length
+                : 0;
+
+            var pastaColaboradores = Path.Combine(config.PastaRaiz, config.PastaColaboradores);
+            TotalProcessados = Directory.Exists(pastaColaboradores)
+                ? Directory.GetFiles(pastaColaboradores, "*.pdf", SearchOption.AllDirectories).Length
+                : 0;
+        }
+        catch
+        {
+            TotalRevisar = 0;
+            TotalProcessados = 0;
+        }
     }
 
     private void OnMapeamentoAtualizado(object? sender, MapeamentoEventArgs e)
