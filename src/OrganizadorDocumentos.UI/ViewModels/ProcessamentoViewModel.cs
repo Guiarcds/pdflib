@@ -107,12 +107,34 @@ public class ProcessamentoViewModel : ViewModelBase
     {
         var config = _configuracaoService.ObterConfiguracao();
         var pastaEntrada = Path.Combine(config.PastaRaiz, config.PastaEntrada);
+        var pastaBackup = Path.Combine(config.PastaRaiz, "BACKUP");
         var arquivos = _fileService.ListarPdfs(pastaEntrada);
 
         if (arquivos.Count == 0)
         {
             _logService.Aviso("Nenhum arquivo PDF encontrado na pasta de entrada");
             return;
+        }
+
+        Directory.CreateDirectory(pastaBackup);
+
+        var arquivosParaProcessar = new List<string>();
+        foreach (var arquivo in arquivos)
+        {
+            var nomeArquivo = Path.GetFileName(arquivo);
+            var destinoBackup = Path.Combine(pastaBackup, nomeArquivo);
+
+            if (File.Exists(destinoBackup))
+            {
+                var nomeBase = Path.GetFileNameWithoutExtension(destinoBackup);
+                var extensao = Path.GetExtension(destinoBackup);
+                destinoBackup = _fileService.NomeArquivoUnico(pastaBackup, nomeBase, extensao);
+                _logService.Aviso($"Arquivo já existe no BACKUP, usando nome único: {Path.GetFileName(destinoBackup)}");
+            }
+
+            File.Move(arquivo, destinoBackup);
+            arquivosParaProcessar.Add(destinoBackup);
+            _logService.Informacao($"Arquivo movido para BACKUP: {nomeArquivo}");
         }
 
         Processando = true;
@@ -129,7 +151,7 @@ public class ProcessamentoViewModel : ViewModelBase
 
         try
         {
-            var resultados = await _processamentoService.ProcessarLoteAsync(arquivos, progress);
+            var resultados = await _processamentoService.ProcessarLoteAsync(arquivosParaProcessar, progress);
 
             foreach (var resultado in resultados)
             {
